@@ -67,6 +67,16 @@ data.euz <- raw |>
   pivot_wider(names_from = variable, values_from = value.ppp) |>
   mutate(country = "EUZ")
 
+check <- raw |>
+  filter(variable %in% c("aptincj992", "adiincj992"),
+         percentile %in% c("p0p50", "p0p100"),
+         year>=1980) |>
+  select(variable, country, year, percentile, value) |>
+  left_join(ppp, by= "country") |>
+  mutate(value.ppp = value/ppp) |>
+  pivot_wider(names_from = variable, values_from = value.ppp)
+
+
 data.oth2 <- raw |>
   filter(variable %in% c("aptincj992", "adiincj992"),
          percentile %in% dpercentile,
@@ -104,6 +114,18 @@ data.oth <- raw |>
   filter(year>1980)
 
 dina <- bind_rows(data.euz, data.oth2)
+
+dina2 <- bind_rows(data.euz, data.oth)
+
+ggplot(dina2 |> filter(percentile %in% c("p0p50", "p0p100"))) +
+  geom_line(aes(x=year, y=adiincj992, color = percentile))+
+  scale_y_log10() +
+  facet_wrap(vars(country)) +
+  theme_ofce()
+data <- dina |>
+  filter(country%in%c("US", "GB", "FR", "EUZ"),
+         percentile %in% c("p0p50", "p50p90", "p90p100")) |>
+  pivot_longer(cols = c(adiincj992, aptincj992), names_to = "variable", values_to = "eurppp")
 
 ggplot(dina |> filter(percentile %in% c("p0p50", "p0p100"))) +
   geom_line(aes(x=year, y=adiincj992, color = percentile))+
