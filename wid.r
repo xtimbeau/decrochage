@@ -143,7 +143,9 @@ labels <- c(p0p50 = "50% les moins riches",
 ggplot(data) +
   aes(x=year, y=eurppp, color = country) +
   geom_line(linewidth = 0.5)+
-  ggrepel::geom_text_repel(aes(label=label), size= 2.5,
+  ggrepel::geom_text_repel(aes(label=label),
+                           hjust = 0,
+                           size= 2.5,
                            nudge_x = 1,  na.rm=TRUE,
                            max.overlaps = Inf,
                            min.segment.length=0.5,
