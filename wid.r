@@ -8,8 +8,10 @@ curl::curl_download("https://wid.world/bulk_download/wid_all_data.zip",
                     destfile = "/tmp/wid/wid.zip")
 unzip("/tmp/wid/wid.zip", exdir = "/tmp/wid")
 
-pays <- c("FR", "DE", "IT", "ES", "NL", "AT", "BE", "FI", "GR", "PT", "IE", "US", "GB")
-euz <- c("FR", "DE", "IT", "ES", "NL", "AT", "BE", "FI", "GR", "PT", "IE")
+eurozone <- eurostat::ea_countries |> pull(code)
+
+pays <- c(eurozone, "US", "GB")
+euz <- eurozone
 dpercentile <- str_c(str_c("p", 0:99),  str_c("p", 1:100))
 raw <- map_dfr(pays, ~{
   vroom::vroom(glue("/tmp/wid/WID_data_{.x}.csv")) |>
