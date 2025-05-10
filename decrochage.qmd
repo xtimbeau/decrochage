@@ -1,11 +1,174 @@
 ---
-title: "decrochage"
+title: "L'Europe décroche-t-elle des Etats-Unis ?"
 ---
 
-## Quarto
+```{r, include=FALSE}
+ofce::init_qmd()
+```
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+## Le rapport Draghi 
 
-```{r}
-1 + 1
+Publié au printemps 2024, le rapport Draghi a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation) et en parité de pouvoir d'achat (donc comparable entre zones géographiques) et par tête (donc corrigé de la démographie) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 15% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un demi point par an, la zone euro semble perdre du terrain.
+
+Le constraste à l'intérieur de la zone euro est important, entre une performance plus importante des Pays-Bas (un écart de 7% avec les Etats Unis en 2024) et l'Espagne (un écart de 36%). Mais c'est bien autour de 2008 que les choses se jouent : les Pays-Bas perdent 13 points de PIB par tête par rapport aux Etats-Unis, l'Allemagne et la France 12 points, l'Italie 15 et l'Espagne 10.
+
+```{r, results="asis"}
+#| label: fig-pibcap
+#| fig-cap: PIB par habitant
+#| fig-asp: 0.7
+
+oecd <- ofce::source_data("oecd.R") |> 
+  group_by(year) |> 
+  filter(year>1980) |> 
+  mutate(
+    clabel = countrycode::countrycode(country, "iso3c", "country.name.fr"),
+    clabel = ifelse(country=="EUZ", "Zone euro", clabel),
+    us1 = value/value[country=="USA"],
+    relus = value/value[country=="USA"]-1) |>
+  group_by(country) |> 
+  mutate(
+    label = ifelse(year==max(year), country, NA_character_)) |> 
+  ungroup() |> 
+  mutate(
+    lline = glue("<b>{round(value/1000,1)} k$</b> (2021, ppp)/an/personne"),
+    rline = ifelse(country=="USA", "", glue(" ({ifelse(relus>0, '+','')}{round(relus*100)}% USA)")),
+    tooltip = glue("<b>{clabel}</b>
+                   {year}
+                   {lline}{rline}")   ) |> 
+  rename(ppp = value)
+
+ggpib <- function(pays, variable) {
+  if(variable=="ppp") 
+    scaley <- scale_y_log10(
+      limits = c(30000, 90000),
+      labels = scales::label_number(scale=1/1000, suffix="k"),
+      guide  = guide_axis_logticks()
+    ) 
+  if(variable=="us1") 
+    scaley <- scale_y_log10(
+      guide  = guide_axis_logticks()
+    ) 
+  ggplot(oecd |> filter(country %in% pays)) +
+    aes(year, .data[[variable]], color = country, group = country) +
+    geom_line() +
+    geom_point_interactive(
+      aes(tooltip = tooltip, data_id = year, fill = country),
+      shape = 21, stroke = 0.25, col = "white", hover_nearest = TRUE) +
+    scale_color_pays("iso3") +
+    scale_x_continuous(
+      breaks = seq(1980, 2020, by=10),
+      expand = expansion(add = c(0,5))) +
+    ggrepel::geom_text_repel(aes(label=label),
+                             size= 3,
+                             hjust = 0.5,
+                             nudge_x = 1.5,
+                             max.overlaps = 2,
+                             na.rm=TRUE,
+                             min.segment.length=0.1,
+                             segment.size = 0.1,
+                             xlim = c(2024.5, Inf),
+                             direction = "y") +
+    theme_ofce(
+      marquee=TRUE,
+      panel.spacing = unit(12, 'pt'),
+      axis.text = marquee::element_marquee(size = rel(0.7)),
+      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+      axis.ticks.length.y = unit(-2, 'pt'),
+      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+    xlab(NULL)+
+    ylab("PIB, US$2021 ppp par habitant")+
+    scaley +
+    guides(color="none", fill="none") +
+    ofce::ofce_caption(
+      source = "OECD Economic Outlook 116 (EO), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "Le PIB par tête est en dollar constant (2021), en parité de pouvoir d'achat (*GDPVD_CAP*) ; la zone euro est à 17 membres." )
+}
+
+plots <- list(
+  "Dollars constants (ppp)" = list(
+    "USA, EUZ, GB, CHE" = ggpib(c("USA","EUZ", "GBR", "CHE"), "ppp"),
+    "DEU, FRA, ITA, ESP, NLD" = ggpib(c("DEU", "FRA", "ITA", "ESP", "NLD"), "ppp")),
+  "Relatif aux USA" = list(
+    "USA, EUZ, GB, CHE" = ggpib(c("USA","EUZ", "GBR", "CHE"), "us1"),
+    "DEU, FRA, ITA, ESP, NLD" = ggpib(c("DEU", "FRA", "ITA", "ESP", "NLD"), "us1"))
+)
+
+tabsetize2(plots, r=2)
+```
+
+```{r, include=FALSE}
+dina <- ofce::source_data("wid.R")
+
+labels <- c(p0p50 = "50% les moins riches",
+            p50p90 = "entre les 50% les moins riches et les 10% les plus riches",
+            p90p100 = "10% les plus riches")
+
+gg <- function(pays, variable) {
+  ggplot(dina |> filter(country%in%pays, variable %in% !!variable)) +
+  aes(x=year, y=eurppp, color = country) +
+  geom_line(linewidth = 0.5)+
+  ggrepel::geom_text_repel(aes(label=label),
+                           size= 2.5 ,
+                           hjust =  0.5,
+                           nudge_x = 1.5,
+                           na.rm=TRUE,
+                           max.overlaps = Inf,
+                           min.segment.length=0.1,
+                           segment.size = 0.1,
+                           xlim = c(2023.5, Inf),
+                           direction = "y"
+  ) +
+  geom_point_interactive(
+    aes( tooltip = tooltip,
+         data_id = year, fill = country),
+    shape=21, color="white", stroke = 0.1, size=0.75 ,
+    hover_nearest = TRUE) +
+  facet_wrap(
+    vars(percentile), labeller = as_labeller(labels) )+
+  scale_y_log10(
+    limits = c(7500, 300000),
+    labels = scales::label_number(scale=1/1000, suffix = "k"),
+    breaks = c(20000, 30000, 50000, 100000, 150000, 200000),
+    guide  = guide_axis_logticks()) +
+  scale_x_continuous(
+    breaks = seq(1980, 2020, by = 10),
+    expand = expansion(add = c(0, 6) ) ) +
+  coord_cartesian(clip = "off") +
+  ylab("€ 2023, ppp, par tête par an") +
+  xlab(NULL) +
+  ofce::scale_color_pays("iso2c") +
+  guides(color = "none", fill = "none") +
+  theme_ofce(
+    panel.spacing = unit(12, 'pt'),
+    axis.text = marquee::element_marquee(size = rel(0.7)),
+    axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+    axis.ticks.length.y = unit(-2, 'pt'),
+    strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+    strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+  ofce::ofce_caption(
+    source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+    code = "https://github.com/xtimbeau/decrochage",
+    note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre" )
+}
+
+```
+
+```{r, results="asis"}
+#| label: fig-percentile
+#| fig-cap: Evolution des revenus avant et après taxation 
+#| fig-asp: 0.8
+
+plots <- list(
+  "Revenu ajusté, après taxes et redistribution" = list(
+    "USA, EUZ, GB, CHE" = gg(c("US","EUZ","GB", "CH"), "adiincj992"),
+    "DEU, FRA, ITA, ESP, NLD" = gg(c("DE","FR","IT","ES","NL"), "adiincj992")),
+    "Revenu primaire avant taxes et redistribution" = list(
+    "USA, EUZ, GB,CHE" = gg(c("US","EUZ","GB", "CH"), "aptincj992"),
+    "DEU, FRA, ITA, ESP, NLD" = gg(c("DE","FR","IT","ES","NL"), "aptincj992"))
+)
+
+tabsetize2(plots, girafy=TRUE, r=1.5)
+
 ```

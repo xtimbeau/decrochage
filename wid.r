@@ -4,14 +4,16 @@ library(MetricsWeighted)
 library(ofce)
 library(ggrepel)
 library(ggiraph)
+
 dir.create("/tmp/wid")
+
 curl::curl_download("https://wid.world/bulk_download/wid_all_data.zip",
                     destfile = "/tmp/wid/wid.zip")
 unzip("/tmp/wid/wid.zip", exdir = "/tmp/wid")
 
 eurozone <- eurostat::ea_countries |> pull(code) |> str_replace("EL","GR")
 
-pays <- c(eurozone, "US", "GB")
+pays <- c(eurozone, "US", "GB", "CH")
 euz <- eurozone
 dpercentile <- str_c(str_c("p", 0:99),  str_c("p", 1:100))
 
@@ -107,63 +109,38 @@ data.oth <- raw |>
   pivot_wider(names_from = variable, values_from = value.ppp) |>
   filter(year>1980)
 
-dina <- bind_rows(data.euz, data.oth2)
 
-ggplot(dina |> filter(percentile %in% c("p0p50", "p0p100"))) +
-  geom_line(aes(x=year, y=adiincj992, color = percentile))+
-  scale_y_log10() +
-  facet_wrap(vars(country)) +
-  theme_ofce()
-
-data <- dina |>
-  filter(country%in%c("US", "EUZ"),
-         percentile %in% c("p0p50", "p50p90", "p90p100")) |>
+dina <- bind_rows(data.euz, data.oth2) |>
+  filter(
+    percentile %in% c("p0p50", "p50p90", "p90p100")) |>
   pivot_longer(cols = c(adiincj992, aptincj992), names_to = "variable", values_to = "eurppp") |>
   group_by(year, percentile, variable) |>
-  mutate(usrel = eurppp/eurppp[country=="US"]) |>
+  mutate(usrel = eurppp/eurppp[country=="US"]-1) |>
   group_by(percentile, country, variable) |>
   mutate(
-    label = ifelse(year==max(year), str_c(country, " ", round(usrel*100, 0),"%"), NA_character_)
+    label = ifelse(year==max(year), str_c(country), NA_character_),
+    label = ifelse(str_detect(label, "^US"), "US", label)
   ) |>
   ungroup() |>
   mutate(
     clabel = countrycode::countrycode(country, "iso2c", "country.name.fr"),
+    clabel = ifelse(country=="EUZ", "Zone euro", clabel),
     vlabel = case_match(variable,
-                        "aptincj992" ~ "Revenu pré-taxation, par individu",
-                        "adiincj992" ~ "Revenu ajusté après taxe et redistribution, par individu"),
-    variable= factor(variable, c("aptincj992", "adiincj992")),
-    tooltip = glue("<b>{clabel}</b><br>{year}<br>{vlabel} : {round(eurppp/1000,1)} k€(2023, ppp)/an/adulte")
-  )
+                        "aptincj992" ~ "Pré-taxation",
+                        "adiincj992" ~ "Ajusté après taxation et redistribution"),
+    variable= factor(variable, c("aptincj992", "adiincj992"))) |>
+  group_by(year, country, percentile) |>
+  mutate(
+    lline = glue("<b>{round(eurppp/1000,1)} k€</b> (2023, ppp)/an/adulte, {vlabel}"),
+    rline = ifelse(country=="US", "", glue(" ({ifelse(usrel>0, '+','')}{round(usrel*100)}% US)")),
+    ept = eurppp[variable=="adiincj992"]/eurppp[variable=="aptincj992"] - 1,
+    eline = glue("Le revenu après taxes et redis. est {ifelse(ept>0, 'augmenté', 'diminué')} de <b>{round(100*abs(ept))}%</b> par rapport au revenu pré taxation"),
+    tooltip = glue("<b>{clabel}</b>
+                   {year}
+                   {lline[variable=='aptincj992']}{rline[variable=='aptincj992']}
+                   {lline[variable=='adiincj992']}{rline[variable=='adiincj992']}
+                   {eline}")
+  ) |> ungroup() |>
+  select(country, year, eurppp, label, percentile, variable, tooltip)
 
-labels <- c(p0p50 = "50% les moins riches",
-            p50p90 = "entre les 50% les moins riches et\n les 10% les plus riches",
-            p90p100 = "10% les plus riches",
-            "adiincj992" = "Revenu ajusté, par individu",
-            "aptincj992" = "Revenu pré-taxation, par individu")
-ggplot(data) +
-  aes(x=year, y=eurppp, color = country) +
-  geom_line(linewidth = 0.5)+
-  ggrepel::geom_text_repel(aes(label=label),
-                           hjust = 0,
-                           size= 2.5,
-                           nudge_x = 1,  na.rm=TRUE,
-                           max.overlaps = Inf,
-                           min.segment.length=0.5,
-                           segment.size = 0.1,
-                           xlim = c(2023, NA),
-                           direction = "y"
-                           ) +
-  geom_point_interactive(
-    aes( tooltip = tooltip, data_id = country, fill = country),
-    shape=21, color="white", stroke = 0.1, size=0.75  ) +
-  facet_grid(
-    cols = vars(percentile),
-    rows = vars(variable), labeller = as_labeller(labels) )+
-  scale_y_log10(
-    labels = scales::label_number(scale=1/1000, suffix = "k"),
-    breaks = c(20000, 30000, 40000, 50000, 100000, 150000, 200000),
-    guide  = guide_axis_logticks()) +
-  ofce::scale_color_pays("iso2c") +
-  coord_cartesian(expand = TRUE, clip="off") +
-  guides(color = "none", fill = "none") +
-  theme_ofce()
+return(dina)

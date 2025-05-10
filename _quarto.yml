@@ -3,3 +3,10 @@ project:
 
 editor: visual
 
+format:
+  ofce-html:
+    number-depth: 4
+    number-sections: TRUE
+    toc-depth: 4
+    image-lazy-loading: true
+    toc-title: Sur cette page
