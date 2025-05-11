@@ -50,7 +50,7 @@ ggpib <- function(pays, variable) {
       shape = 21, stroke = 0.25, col = "white", hover_nearest = TRUE)
     ylab <- ylab("PIB, US$2021 ppp par habitant")
     scaley <- scale_y_log10(
-      limits = c(30000, 90000),
+      limits = c(25000, 90000),
       labels = scales::label_number(scale=1/1000, suffix="k"),
       guide  = guide_axis_logticks()
     ) 
