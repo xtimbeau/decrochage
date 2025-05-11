@@ -193,14 +193,14 @@ pays_long <- c(FRA = "France", EUZ = "Zone euro", DEU = "Allemagne", ESP = "Espa
                RUS = "Russie", ZAF = "Afrique du Sud", CHN = "Chine")
 
 pays_long2 <- c(FRA = "France", EUZ = "Zone euro", DEU = "Allemagne", ESP = "Espagne", GBR = "Royaume-Uni",
-               USA = "Etats-Unis",
-               BRA = "Br\u00e9sil", CHI = "Chine",
-               PECO = "Pays d'Europe centrale et orientale", NLD = "Pays-Bas", CHE = "Suisse",
-               NOR = "Norv\u00e8ge", GRC = "Gr\u00e8ce", SWE  = "Su\u00e8de", ITA = "Italie", AUT = "Autriche",
-               FIN = "Finlande", AUS = "Australie",
-               BEL  = "Belgique", DEN = "Danemark", PRT = "Portugal",
-               CAN ="Canada", MEX = "Mexique", IND = "Inde", JPN= "Japon",
-               RUS = "Russie", ZAF = "Afrique du Sud", CHN = "Chine")
+                USA = "Etats-Unis",
+                BRA = "Br\u00e9sil", CHI = "Chine",
+                PECO = "Pays d'Europe centrale et orientale", NLD = "Pays-Bas", CHE = "Suisse",
+                NOR = "Norv\u00e8ge", GRC = "Gr\u00e8ce", SWE  = "Su\u00e8de", ITA = "Italie", AUT = "Autriche",
+                FIN = "Finlande", AUS = "Australie",
+                BEL  = "Belgique", DEN = "Danemark", PRT = "Portugal",
+                CAN ="Canada", MEX = "Mexique", IND = "Inde", JPN= "Japon",
+                RUS = "Russie", ZAF = "Afrique du Sud", CHN = "Chine")
 
 
 ## pour les tableaux
@@ -476,7 +476,7 @@ pathify <- function(path, root = ofce.project.root) {
 }
 
 tabsetize <- function(list, facety = TRUE, cap = TRUE, girafy = TRUE, asp = NULL, r = 1.5) {
-  if(knitr::is_html_output()) {
+  if(knitr::is_html_output()&!interactive()) {
     chunk <- knitr::opts_current$get()
     label <- knitr::opts_current$get()$label
     if(cap) {
@@ -490,19 +490,21 @@ tabsetize <- function(list, facety = TRUE, cap = TRUE, girafy = TRUE, asp = NULL
       cat(paste0("### ", .y," {.tabset} \n\n"))
 
       if(is(.x, "ggplot")) {
-          id <- str_c(digest::digest(.x, algo = "crc32"), "-", ids[[.y]])
-          if(!is.null(asp))
-            asp_txt <- glue(", fig.asp={asp}")
-          else
-            asp_txt <- ""
-          lbl <- glue("'{id}'")
-          if(girafy)
-            plot <- girafy(.x, r=r)
-          else
-            plot <- .x
-          rendu <- knitr::knit(text = str_c("```{r ", lbl, asp_txt," }\nplot \n```"), quiet=TRUE)
-          cat(rendu, sep="\n")
-        }
+        id <- str_c(digest::digest(.x, algo = "crc32"), "-", ids[[.y]])
+        if(!is.null(asp))
+          asp_txt <- glue(", fig.asp={asp}")
+        else
+          asp_txt <- ""
+        lbl <- glue("'{id}'")
+        if(girafy)
+          plot <- girafy(.x, r=r)
+        else
+          plot <- .x
+        rendu <- knitr::knit(
+          text = str_c("```{r ", lbl, asp_txt," }\nplot \n```"),
+          quiet=TRUE)
+        cat(rendu, sep="\n")
+      }
 
       if(is(.x, "character")) {
         cat("![](", .x, "){fig-align='center'}")
@@ -517,12 +519,27 @@ tabsetize <- function(list, facety = TRUE, cap = TRUE, girafy = TRUE, asp = NULL
       cat("::::\n\n")
     }
   } else {
-    if(facety)
-      patchwork::wrap_plots(list, ncol = 2) & theme_ofce(base.size=6)
-    else
-      list[[1]] |> print()
+
+      ids <- 1:length(list) |> set_names(names(list))
+      label <- knitr::opts_current$get()$label
+
+      purrr::iwalk(list, ~{
+        id <- ids[[.y]]
+        if(!is.null(asp))
+          asp_txt <- glue(", fig.asp={asp}")
+        else
+          asp_txt <- ""
+        lbl <- glue("'{label} {id}'")
+        if(is(.x, "ggplot")) {
+        plot <- .x
+        rendu <- knitr::knit(
+          text = str_c("```{r ", lbl, asp_txt," }\nplot \n```"),
+          quiet=TRUE)
+        }
+        cat(rendu, sep="\n")
+      })
+    }
   }
-}
 
 tabsetize2 <- function(list, facety = TRUE, cap = TRUE, girafy = FALSE, asp=NULL, r=1.5) {
 

@@ -25,7 +25,7 @@ raw <- map_dfr(pays, ~{
         variable== "acaincj992"|
         variable == "xlceupi999"|
         variable=="npopuli992",
-      percentile %in% c("p0p50", "p0p90", "p0p100", dpercentile)) |>
+      percentile %in% c("p0p50", "p0p90", "p0p99", "p0p100", dpercentile)) |>
     mutate(pays = .x, age = as.numeric(age))
 })
 
@@ -57,18 +57,22 @@ data.euz <- raw |>
   arrange(year, value.ppp) |>
   mutate(qp0p50 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.5),
          qp0p90 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.9),
+         qp0p99 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.99),
          qp0p100 = TRUE) |>
   summarize(
     p0p50 = sum(value.ppp[qp0p50] * pop[qp0p50])/sum(pop[qp0p50]),
     p0p90 = weighted_mean(value.ppp[qp0p90], w = pop[qp0p90]),
     p50p90 = weighted_mean(value.ppp[!qp0p50&qp0p90], w = pop[!qp0p50&qp0p90]),
+    p50p99 = weighted_mean(value.ppp[!qp0p50&qp0p99], w = pop[!qp0p50&qp0p99]),
     p90p100 = weighted_mean(value.ppp[!qp0p90], w = pop[!qp0p90]),
+    p90p99 = weighted_mean(value.ppp[!qp0p90&qp0p99], w = pop[!qp0p90&qp0p99]),
+    p99p100 = weighted_mean(value.ppp[!qp0p99], w = pop[!qp0p99]),
     p0p100 = weighted_mean(value.ppp, w = pop),
     pop = sum(pop),
     countries = list(unique(country)),
     .groups = "drop") |>
-  select(variable, year, p0p50, p0p90, p50p90, p90p100, p0p100) |>
-  pivot_longer(cols = c(p0p50, p0p90, p50p90, p90p100, p0p100),
+  select(variable, year, p0p50, p0p90, p50p90, p50p99, p90p100, p90p99, p50p99, p99p100, p0p100) |>
+  pivot_longer(cols = c(p0p50, p0p90, p50p90, p90p100, p50p99, p90p99, p99p100, p0p100),
                names_to = "percentile", values_to = "value.ppp") |>
   pivot_wider(names_from = variable, values_from = value.ppp) |>
   mutate(country = "EUZ")
@@ -86,23 +90,27 @@ data.oth2 <- raw |>
   arrange(year, value.ppp) |>
   mutate(qp0p50 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.5),
          qp0p90 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.9),
+         qp0p99 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.99),
          qp0p100 = TRUE) |>
   summarize(
     p0p50 = sum(value.ppp[qp0p50] * pop[qp0p50])/sum(pop[qp0p50]),
     p0p90 = weighted_mean(value.ppp[qp0p90], w = pop[qp0p90]),
     p50p90 = weighted_mean(value.ppp[!qp0p50&qp0p90], w = pop[!qp0p50&qp0p90]),
+    p50p99 = weighted_mean(value.ppp[!qp0p50&qp0p99], w = pop[!qp0p50&qp0p99]),
     p90p100 = weighted_mean(value.ppp[!qp0p90], w = pop[!qp0p90]),
+    p90p99 = weighted_mean(value.ppp[!qp0p90&qp0p99], w = pop[!qp0p90&qp0p99]),
+    p99p100 = value.ppp[percentile=="p99p100"],
     p0p100 = weighted_mean(value.ppp, w = pop),
     pop = sum(pop),
     .groups = "drop") |>
-  select(variable, country, year, p0p50, p0p90, p50p90, p90p100, p0p100) |>
-  pivot_longer(cols = c(p0p50, p0p90, p50p90, p90p100, p0p100),
+  select(variable, country, year, p0p50, p0p90, p50p90, p90p100, p50p99, p90p99, p99p100, p0p100) |>
+  pivot_longer(cols = c(p0p50, p0p90, p50p90, p50p99, p90p100, p90p99, p99p100, p0p100),
                names_to = "percentile", values_to = "value.ppp") |>
   pivot_wider(names_from = variable, values_from = value.ppp)
 
 data.oth <- raw |>
   filter(variable %in% c("aptincj992", "adiincj992"),
-         percentile %in% c("p0p50", "p0p90", "p0p100")) |>
+         percentile %in% c("p0p50", "p0p90", "p0p100", "p90p99", "p50p99", "p99p100")) |>
   left_join(ppp, by="country") |>
   mutate(value.ppp = value/ppp) |>
   select(variable, country, year, percentile, value.ppp) |>
@@ -112,7 +120,7 @@ data.oth <- raw |>
 
 dina <- bind_rows(data.euz, data.oth2) |>
   filter(
-    percentile %in% c("p0p50", "p50p90", "p90p100")) |>
+    percentile %in% c("p0p50", "p50p90", "p90p100", "p99p100", "p90p99", "p50p99")) |>
   pivot_longer(cols = c(adiincj992, aptincj992), names_to = "variable", values_to = "eurppp") |>
   group_by(year, percentile, variable) |>
   mutate(usrel = eurppp/eurppp[country=="US"]-1) |>
@@ -141,6 +149,13 @@ dina <- bind_rows(data.euz, data.oth2) |>
                    {lline[variable=='adiincj992']}{rline[variable=='adiincj992']}
                    {eline}")
   ) |> ungroup() |>
-  select(country, year, eurppp, label, percentile, variable, tooltip)
+  select(country, year, eurppp, label, percentile, variable, tooltip) |>
+  group_by(variable, year, percentile) |>
+  mutate(us1 = eurppp/eurppp[country=="US"]) |>
+  ungroup() |>
+  pivot_longer(cols = c(eurppp, us1), names_to = "type", values_to = "revenu") |>
+  group_by(country, year, percentile, type) |>
+  mutate(prepost = revenu[variable=="adiincj992"]/revenu[variable=="aptincj992"]) |>
+  ungroup()
 
 return(dina)
