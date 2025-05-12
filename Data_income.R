@@ -21,7 +21,7 @@ library(zoo)
 library(tframePlus)
 library(seasonal)
 
-api_key <- "ed5c6db135c9996757c242231bf28c0e"
+api_key <- Sys.getenv('fred_key')
 set_fred_key(api_key)
 
 

@@ -111,7 +111,6 @@ plots <- list(
 #| fig-cap: PIB par habitant
 #| fig-asp: 0.7
 
-
 tabsetize(plots, r=2)
 ```
 
