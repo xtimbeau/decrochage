@@ -158,27 +158,56 @@ dina <- bind_rows(data.euz, data.oth2) |>
   mutate(prepost = revenu[variable=="adiincj992"]/revenu[variable=="aptincj992"]) |>
   ungroup()
 
-full <- raw |>
+raw.dper <- raw |>
   filter(variable %in% c("aptincj992", "adiincj992"),
          percentile %in% dpercentile,
          country %in% c(euz,"US"),
          year>=1980) |>
-   left_join(ppp, by= "country") |>
+  select(country, year, percentile,value, variable) |>
+  left_join(ppp, by= "country") |>
+  left_join(pop, by = c("country","year")) |>
   mutate(value.ppp = value/ppp,
-         pop = pop/100) |>
-  mutate(qd1 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.1),
-         qd2 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.2),
-         qd3 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.3),
-         qd4 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.4),
-         qd5 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.5),
-         qd6 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.6),
-         qd7 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.7),
-         qd8 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.8),
-         qd9 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.9)
-  ) |>
-  pivot_longer(cols=starts_with("qd"),names_to = "decile",values_to = "revenu") |>
-  mutate(country2 = ifelse(country=="US", "US", "EUZ"))
+         pop = pop/100,
+         country2 = ifelse(country=="US", "US", "EUZ"),
+         country3 = case_when(
+           country=="US" ~ "US",
+           country=="DE" ~ "DE",
+           country=="FR" ~ "FR",
+           country=="IT" ~ "IT",
+           country=="ES" ~ "ES",
+           country=="NL" ~ "NL",
+           TRUE ~ "Autres EUZ" )) |>
+  mutate(
+    country3 = factor(country3, c("Autres EUZ", "NL", "ES", "IT", "FR", "DE","US"))
+  )
 
-ggplot(full)
+dec_year <- raw.dper |>
+  group_by(year, variable) |>
+  reframe(seuil = weighted_quantile(value.ppp, w=pop, probs = 0:10/10),
+          decile = str_c("d", 0:10)) |>
+  group_by(year, variable) |>
+  transmute(year, variable, decile, seuilm = lag(seuil), seuilp = seuil) |>
+  ungroup() |>
+  mutate(seuilm = ifelse(seuilm==0, -1, seuilm)) |>
+  drop_na(seuilm)
 
-          return(dina)
+full <- raw.dper |>
+  left_join(dec_year, join_by(year, variable, value.ppp > seuilm, value.ppp<=seuilp)) |>
+  mutate(decile = factor(decile, str_c("d", 1:10))) |>
+  group_by(year, variable) |>
+  mutate(popr = pop/sum(pop)) |>
+  ungroup() |>
+  group_by(variable, country3, decile,year) |>
+  summarize(popr = sum(popr)) |>
+  group_by(variable, country3, decile) |>
+  mutate(odd = popr[year==2023]/popr[year==1980])
+
+
+ggplot(full |> filter(year %in% c(1980,2023),variable=="aptincj992")) +
+  facet_grid(cols = vars(year), rows = vars(country3))+
+  geom_col(aes(x = decile, y=popr, fill = country3))+
+  theme_ofce()+
+  ofce::scale_color_pays("iso2c")
+
+
+return(dina)
