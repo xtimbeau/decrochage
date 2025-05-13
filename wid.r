@@ -158,4 +158,27 @@ dina <- bind_rows(data.euz, data.oth2) |>
   mutate(prepost = revenu[variable=="adiincj992"]/revenu[variable=="aptincj992"]) |>
   ungroup()
 
-return(dina)
+full <- raw |>
+  filter(variable %in% c("aptincj992", "adiincj992"),
+         percentile %in% dpercentile,
+         country %in% c(euz,"US"),
+         year>=1980) |>
+   left_join(ppp, by= "country") |>
+  mutate(value.ppp = value/ppp,
+         pop = pop/100) |>
+  mutate(qd1 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.1),
+         qd2 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.2),
+         qd3 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.3),
+         qd4 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.4),
+         qd5 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.5),
+         qd6 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.6),
+         qd7 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.7),
+         qd8 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.8),
+         qd9 = value.ppp <= weighted_quantile(value.ppp, w=pop, probs = 0.9)
+  ) |>
+  pivot_longer(cols=starts_with("qd"),names_to = "decile",values_to = "revenu") |>
+  mutate(country2 = ifelse(country=="US", "US", "EUZ"))
+
+ggplot(full)
+
+          return(dina)
