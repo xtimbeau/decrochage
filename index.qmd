@@ -394,7 +394,7 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
                 percentile %in% !!percentile)) +
   aes(x =year, y = prepost, color = country, group=country) +
   geom_hline(yintercept = 1, linewidth = 0.25, color= "grey") + 
-  geom_line_intercative(aes(
+  geom_line_interactive(aes(
     data_id = country)) +
   facet_wrap(vars(percentile), labeller = as_labeller(labels), nrow = 1) +
   ofce::scale_color_pays("iso2c") +
