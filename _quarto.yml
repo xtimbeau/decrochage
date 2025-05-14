@@ -4,6 +4,19 @@ project:
 
 editor: visual
 
+manuscript:
+  code-links:
+    - text: Github
+      icon: github
+      href: https::github.com/xtimbeau/decrochage
+    - text: Données OCDE
+      icon: file-code
+      href: oecd.r
+    - text: Données WID
+      icon: file-code
+      href: wid.r
+
+
 format:
   ofce-html:
     number-depth: 4

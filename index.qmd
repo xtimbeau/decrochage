@@ -3,17 +3,24 @@ title: "L'Europe décroche-t-elle des Etats-Unis ?"
 author: 
   - Xavier Timbeau
 date: now
+keywords: []
+keep-md: true
 comments:
   hypothesis: true
+bibliography: references.bib
 ---
 
 ```{r, include=FALSE}
 ofce::init_qmd()
 ```
 
+Selon le rapport Draghi (@draghi2024), l'Europe décroche. L'analyse sectorielle, habituelle, conduit à diagnostiquer un retard technologique que l'on peut relier à des facteurs structurels. L'analyse macroéconomique pointe plutôt une mauvaise combinaison de politiques macroéconomiques. Nous proposons ici une analyse du point de vue des revenus (avant et après redistribution) et de leur distribution le long de de l'échelle des revenus. Du point de vue des 50% les plus pauvres, l'Europe est un modèle attractif et robuste. La trajectoire de l'Espagne est celle d'un développement réduisant les inégalités alors que les Pays-Bas combinent forte redistribution et croissance partagée. La France réussit à maintenir un modèle plutôt égalitaire, alors que les Etats-Unis sont marqués par une polarisation extrême. La forte croissance américaine profite surtout aux plus riches et aux très riches, laissant sur le côté une grande partie de la population sans qu'aucun ruissellement ne leur bénéficie.
+
+Peut-on avoir la croissance (moyenne ou agrégée) des Etats-Unis sans la hausse des inégalités ?
+
 ## Le rapport Draghi
 
-Publié au printemps 2024, le rapport Draghi a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation[^1]) et en parité de pouvoir d'achat (donc comparable entre zones géographiques[^2]) et par tête (donc corrigé de la démographie[^3]) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 15% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un demi point par an, la zone euro semble perdre du terrain.
+Publié au printemps 2024, le rapport Draghi (@draghi2024) a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation[^1]) et en parité de pouvoir d'achat (donc comparable entre zones géographiques[^2]) et par tête (donc corrigé de la démographie[^3]) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 14% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un peu plus d'un demi point par an, la zone euro semble perdre du terrain.
 
 [^1]: Les données considérées sont donc les PIB en valeur, divisés par le déflateur du PIB qui peut différer des indices de prix à la consommation. De nombreuses réserves s'appliquent aux déflateurs et en particulier à leur utilisation pour des comparaisons internationales du fait de méthodes non homogénéisées entre les instituts statistiques.
 
@@ -58,9 +65,12 @@ ggpib <- function(pays, variable) {
     ) 
   }
   if(variable=="us1") { 
-    interactive <- NULL
-    ylab <- ylab("PIB, US$2021 ppp par habitant, USA = 1")
+    interactive <- geom_point_interactive(
+      aes(tooltip = tooltip, data_id = year, fill = country),
+      shape = 21, stroke = 0.25, col = "white", hover_nearest = TRUE)
+    ylab <- ylab("PIB, US$2021 ppp par habitant, USA = 100%")
     scaley <- scale_y_log10(
+      labels = scales::label_number(scale = 100, suffix="%"),
       guide  = guide_axis_logticks()
     ) 
   }
@@ -104,7 +114,7 @@ ggpib <- function(pays, variable) {
 plots <- list(
     "USA, EUZ, GB, CHE" = ggpib(c("USA","EUZ", "GBR", "CHE"), "ppp"),
     "DEU, FRA, ITA, ESP, NLD" = ggpib(c("DEU", "FRA", "ITA", "ESP", "NLD"), "ppp"),
-    "relatif aux USA" = ggpib(c("USA", "GBR", "CHE","DEU", "FRA", "ITA", "ESP", "NLD"), "us1"))
+    "relatif aux USA" = ggpib(c("USA", "GBR", "CHE","EUZ", "DEU", "FRA", "ITA", "ESP", "NLD"), "us1"))
 
 ```
 
@@ -116,25 +126,35 @@ plots <- list(
 tabsetize(plots, r=2)
 ```
 
-Le constraste à l'intérieur de la zone euro est important, entre une performance plus importante des Pays-Bas (un écart de 7% avec les Etats Unis en 2024) et l'Espagne (un écart de 36%). Mais c'est bien autour de 2008 que les choses se jouent (onglet relatif aux USA sur le @fig-pibcap), même si pour certains pays (la France et L'Italie notamment) le décrochage se produit antérieurment, mais probablement pour des raisons démographiques) : depuis 2008, les Pays-Bas perdent 13 points de PIB par tête par rapport aux Etats-Unis, l'Allemagne et la France 12 points, l'Italie et l'Espagne 15 et 10 points respectivement. C'est bien la simulnaéité de cette évolution qui la rend frappante, d'autant qu'elle ne se limite pas à l'Union Européenne, la Suisse et le Royaume-Uni connaissant des évolutions similaires.
+Le contraste à l'intérieur de la zone euro est important, entre une performance plus importante des Pays-Bas (un écart de 7% avec les Etats Unis en 2024) et l'Espagne (un écart de 36%). Mais c'est bien autour de 2008 que les choses se jouent (onglet relatif aux USA sur le @fig-pibcap), même si pour certains pays (la France et l’Italie notamment) le décrochage se produit antérieurement, mais probablement pour des raisons démographiques) : depuis 2008, les Pays-Bas perdent 12 points de PIB par tête par rapport aux Etats-Unis, l'Allemagne et la France 11 points, l'Italie et l'Espagne 16 et 10 points respectivement (10 point pour la Zone euro). C'est bien la simultanéité de cette évolution qui la rend frappante, d'autant qu'elle ne se limite pas à l'Union Européenne, comme l'indiquent les trajectoire de la Suisse ou du Royaume-Uni.
 
 De nombreuses explications ont été avancées pour expliquer le décrochage depuis 2008. On peut citer :
 
--   Une explication "keynésienne" selon laquelle les politiques macroéconomiques menées après la crise financière de 2008 et les conséquences de la crise des dettes souveraines en zone euro qui ont conduit à un sous-investissement privé et public et une surépargne du continent conduisant à un accroissement de la poisition nette extérieur et une réduction relative des dettes publiques (voir iAGS). La crise sanitaire de 2020 a pu avoir des conséquences différenciées.
+-   Une explication "keynésienne" selon laquelle les politiques macroéconomiques menées après la crise financière de 2008 et les conséquences de la crise des dettes souveraines en zone euro qui ont conduit à un sous-investissement privé et public et une sur-épargne du continent conduisant à un accroissement de la position nette extérieur et une réduction relative des dettes publiques plus importante en zone Euro qu'ailleurs (voir iAGS [@iags2019] et @blot2025). La crise sanitaire de 2020 a pu avoir des conséquences différenciées accentuant des trajectoires divergentes depuis 2008.
 
--   Une explication structurelle situant dans l'incomplétude de la zone euro, et en particulier la fragmentation financière, l'absence d'un marché de capitaux intégré, une trop grande importance du crédit bancaire dans le financement des entreprises, une concurrence insuffisante sur les marchés des biens et des services qui auraient empêché les entreprises européennes de prendre leur place dans la compétition technologique (voir le rapport Draghi).
+-   Une explication structurelle situant dans l'incomplétude de la zone euro, et en particulier la fragmentation financière, l'absence d'un marché de capitaux intégré, une trop grande importance du crédit bancaire dans le financement des entreprises, une concurrence insuffisante sur les marchés des biens et des services, un empilement normatif qui empêcheraient les entreprises européennes d'investir et d'innover et de prendre leur place dans la compétition technologique (voir @draghi2024).
 
--   Dans la même lignée, l'explication selon laquelle la lourdeur du système social et la redistribution qu'elle implique pèserait sur la compétitivité, l'allocation des ressources de la dépense publique et les effets négatif sur l'offre de travail consuidant par exemple les plus productifs à quitter l'Europe pour d'autres cieux (voir ...).
+-   Dans la même lignée, l'explication selon laquelle la lourdeur du système social et la redistribution qu'elle implique pèserait sur la compétitivité, l'allocation des ressources de la dépense publique et les effets négatif sur l'offre de travail conduisant par exemple les plus productifs à quitter l'Europe pour d'autres cieux.
 
--   Une explication par le prix de l'énergie. D'un côté la montée en puissance du marché carbone EU ETS (Emission Trade System) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir Geerolf) ou encore l'Inflation Reduction Act (2022, voir note CAE). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis (rapport Draghi), mais la marche est suffisament importante pour que l'évolution remonte à quelques années auparavant.
+-   Une explication par le prix de l'énergie ( @blot2025). D'un côté la montée en puissance du marché carbone EU ETS (*European Union* *Emission Trade System*) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir @geerolf2022) ou encore l'*Inflation Reduction Act* (2022, voir @cae2023ira). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis (@draghi2024), mais la marche est suffisamment importante pour que l'évolution remonte à quelques années auparavant.
 
--   Une explication technologique, selon laquelle le décrochage est lié à une vague d'innovation (digitalisation et services réseaux, robotique, intelligence articificielle, calcul massif mais aussi dans d'autres secteurs comme la production d'énergie (éolienne, panneaux solaires), les batteries électriques, lesbiotechnologies) dont le coeur se situe entre la Chine et les Etats-Unis. La combinaison d'un système éducatif supérieur très performant, d'un système de financement de l'innovation efficace, d'une commande publique importante qui complète un marché à même de les absorber, d'un protectionisme agressif sur ces technologies et de technologies partiellement caractérisées par des effets de réseau important (voir DRIC).
+-   Une explication technologique, selon laquelle le décrochage est lié à une vague d'innovation (digitalisation et services réseaux, robotique, intelligence artificielle, calcul massif mais aussi dans d'autres secteurs comme la production d'énergie (éolienne, panneaux solaires), les batteries électriques, biotechnologies) dont le coeur se situe entre la Chine et les Etats-Unis. La combinaison d'un système éducatif supérieur très performant, d'un système de financement de l'innovation efficace, d'une commande publique importante qui complète un marché à même de les absorber, d'un protectionnisme agressif sur ces technologies et de technologies partiellement caractérisées par des effets de réseau important (@dric2025).
 
 ## L'angle de la distribution des revenus
 
 ### Quelques remarques de méthode
 
 Les explications rappelées ci-dessus partagent un diagnostic établi sur la base du PIB agrégé, ou moyen et pour la plupart sont sous l'angle de la production ou de la demande agrégée. Or, les évolutions des revenus sont aussi pertinentes pour juger de la capacité d'une économie à fournir un revenu à ses citoyens et peut être déclinée par catégorie de revenu.
+
+Si le revenu découle de la production et de la rémunération des facteurs, d'autres éléments le modifient et suivant les catégories de revenu, la modification peut être importante. Pour les revenus les plus faibles, la redistribution (prestations sociales) nette des contributions (impôts directs et indirects) augmente le revenu primaire tiré des revenus d'activité. Pour les plus hauts revenus, la redistribution est généralement un prélèvement net sur le revenu primaire. Cependant, l'épargne accumulée vient accroître le revenu primaire tiré du travail et contribue à travers les revenus du capital au revenu.
+
+Le travail titanesque accompli par les chercheur du *World Inequality Database* (WID), avec des contributions importantes de @piketty2018, permet d'approcher ces notions pour un grand nombre de pays et en remontant dans assez loin dans le temps. Les données fournies par le WID surpassent celles disponibles auprès des instituts statistiques nationaux, et selon les auteurs même (<https://wid.world/methodology/>), la publication de ces données demande sans doute des raccourcis saisissants, mais doivent inciter les instituts statistiques nationaux à publier de meilleurs données et mettre à disposition toute l'information nécessaire pour comprendre les inégalités de revenu et leurs évolutions. En particulier, la notion de comptes nationaux distribués doit beaucoup aux chercheurs du WID et commence à s'imposer comme un des éléments des comptes nationaux (@insee2023).
+
+Pour un contrepoint aux évolutions agrégées, nous utilisons ici les notions de revenu pre taxation (la variable ptinc dans les bases du WID à peu près la notion de revenu primaire, dans laquelle les revenus différés comme la retraite sont cependant traités comme un revenu du travail – les cotisations retraites ne sont donc pas un prélèvement mais une épargne, une convention bienvenue pour les comparaisons internationales). Les revenus post taxation et distribution sont une construction complexe, proche de la notion de revenu disponible brut ajusté, qui est donc le revenu moins les impôts, y compris les impôts indirects, et augmenté des dépenses publiques dont bénéficient les individus, qu'elles soit individualisables et transférées en monnaie, ou qu'elles soient collectives et imputées selon une série de conventions. La complexité, ou le recours à des conventions, n'est pas en soit problématique, mais à ce stade, les choix faits par le WID ne sont pas une convention complètement discutée et délibérée. On ne peut souhaiter que le travail engagé se poursuive et se diffuse afin de pouvoir disposer d'éléments de comparaison aussi solides que possible.
+
+Comme pour les données agrégées, nous considérons les évolutions en valeur déflatée (par le déflateur du PIB en général, non différencié selon les catégories de revenus), ramenées à la parité de pouvoir d'achat (2023 comme une année de référence). Comme évoqué en note de bas de page, ces choix masquent des difficultés de méthode non résolus à ce stade, et en ajoutent quelques uns, comme par exemple le fait de ne pas différencier les indices de prix par catégorie de revenu alors que les coefficients budgétaires sont hétérogènes.
+
+### Le décrochage des plus riches
 
 ```{r, include=FALSE}
 dina <- ofce::source_data("wid.R")$dina
@@ -166,7 +186,11 @@ gg <- function(pays, variable = "aptincj992", type = "eurppp",
     scaley <- scale_y_log10(
       limits = c(.4, 2),
       guide  = guide_axis_logticks())
-    interactive <- NULL
+    interactive <- geom_point_interactive(
+      aes( tooltip = tooltip,
+           data_id = year, fill = country),
+      shape=21, color="white", stroke = 0.1, size=0.75 ,
+      hover_nearest = TRUE)
   }
   ggplot(dina |> filter(country%in%pays,
                         variable %in% !!variable,
@@ -231,83 +255,21 @@ tabsetize2(plots, girafy=TRUE, r=1.5)
 
 ```
 
-Si le revenu découle de la production et de la rémunération des facteurs, d'autres éléments le modifient, parfois de façon importante, suivant le niveau de revenu. Pour les revenus les plus faibles, la redistribution (prestations sociales) nette des contributions (impôts directs et indirects) augmente le revenu primaire tiré des revenus d'activité. Pour les plus hauts revenus, la redistribution est au contraire un prélèvement net sur le revenu primaire. Cependant, l'épargne accumulée vient accroître le revenu primaire tiré du travail et contribue à travers les revenus du capital.
-
-Le travail titanesque accompli par les chercheur du World Inequality Database (WID), avec des contributions importantes de T.Piketty, permet d'approcher ces notions pour un grand nombre de pays et en remontant dans assez loin dans le temps. Les données fournies par le WID surpassent celles disponibles auprès des instituts statistiques nationaux, et selon les auteurs même (<https://wid.world/methodology/>), la publication de ces données demande sans doute des raccourcis saisissants, mais doivent inciter les instituts statistiques nationaux à publier de meilleurs données et mettre à disposition toute l'information nécessaire pour comprendre les inégalités de revenu et leurs évolutions. En particulier, la notion de comptes nationaux distribués doit beaucoup aux chercheurs du WID et commence à s'imposer comme un des éléments des comptes nationaux (voir [INSEE](https://www.insee.fr/fr/information/7635821?sommaire=7635842#:~:text=Sur%20la%20base%20de%20travaux,macro%C3%A9conomiques%20de%20la%20comptabilit%C3%A9%20nationale.)).
-
-Pour un contrepoint aux évolutions agrégées, nous utilisons ici les notions de revenu pre taxation (la variable ptinc dans les bases du WID à peu près la notion de revenu primaire, dans laquelle les revenus différés comme la retraite sont cependant traités comme un revenu du travail – les cotisations retraites ne sont donc pas un prélèvement mais une épargne, une convention bienvenue pour les comparaisons internationales). Les revenus post taxation et distribution sont une construction complexe, proche de la notion de revenu disponible brut ajusté, qui est donc le revenu moins les impôts, y compris les impôts indirects, et augmenté des dépenses publiques dont bénéficient les individus, qu'elles soit individualisables et transférée en monnaie, ou qu'elles soient collectives et imputées selon une série de conventions. La complexité, ou le recours à des conventions, n'est pas en soit problématique, mais à ce stade, les choix faits par le WID ne sont pas une convention discutée et totalement délibérée. On ne peut souhaiter que le travail engagé se poursuive et se diffuse afin de pouvoir disposer d'éléments de comparaison aussi solides que possible.
-
-Comme pour les données agrégées, nous considérons les évolutions en valeur déflatée (par le déflateur du PIB en général, en suivant le WID), ramenées à la parité de pouvoir d'achat (avec 2023 comme une année de référence). Comme évoqué en note de bas de page, ces choix masquent des difficultés de méthode non résolus à ce stade, et en ajoutent quelques uns, comme par exemple le fait de ne pas différencier les indices de prix par catégorie de revenu alors que les coefficients budgétaires sont hétérogènes.
-
-## Le décrochage des plus riches
-
-Lorsqu'on ne regarde que les 50% les moins riches, deux constats modifient dramatiquement les diagnostics de décrochage.
+Le @fig-percentile raconte une histoire assez éloignée du @fig-pibcap. Pour les catégories de revenus le plus faibles, l'avantage revient à la vieille Europe. Ainsi, 4 constats assez spectaculaires s'imposent :
 
 1.  Pour la zone euro dans son ensemble, comme pour la majorité des Etats membres, le revenu par individu en parité de pouvoir d'achat après redistribution est plus élévé qu'aux Etats-Unis (@fig-percentile, notamment l'onglet relatif aux USA). L'écart est constant dans la plupart des pays, s'est fortement réduit en Espagne. L'Italie présente une trajectoire de décrochage manifeste, que ce soit par rapport aux Etats-Unis mais aussi aux pays de la zone euro. La France dans une situation plutôt favorable, bien que les 10 dernières années aient vu une progression faible de ces revenus.
 
-2.  Paradoxalement, pour la moitié de la populaiton, le constat tient pour les revenus primaires y compris retraite (@fig-percentile, onglet Revenu primaire avant taxes et redistribution). Ainsi, ce n'est pas la redistribution (pretations et dépenses publiques, nettes des impôts) qui permet aux 50% les moins riches de bénéficier d'un niveau de vie supérieur que les 50% les moins riches aux Etats-Unis, mais les revenus tirés de l'activité, qu'ils soient immédiats ou différés. Probablement, les systèmes de retraites européens jouent un rôle important mais au delà, les systèmes de rémunération plancher (salaire minimum) et un encadrement des conditions de temps partiels participent aussi à cette caractéristique. Comme l'indique le @fig-prepost, la redistribution pour les 50% les moins riches s'accroît de 1980 à aujourd'hui, dans tous les pays et de façon assez homogène. La trajectoire de la France et des Etats-Unis sont à ce titre assez proches.
+2.  Paradoxalement, pour la moitié de la population, le constat tient pour les revenus primaires y compris retraite (@fig-percentile, onglet Revenu primaire avant taxes et redistribution). Ainsi, ce n'est pas la redistribution (prestations et dépenses publiques, nettes des impôts) qui permet aux 50% les moins riches de bénéficier d'un niveau de vie supérieur que les 50% les moins riches aux Etats-Unis, mais les revenus tirés de l'activité, qu'ils soient immédiats ou différés. Probablement, les systèmes de retraites européens jouent un rôle important mais au delà, les systèmes de rémunération plancher (salaire minimum) et un encadrement des conditions de temps partiels participent aussi à cette caractéristique. Comme l'indique le @fig-prepost, la redistribution pour les 50% les moins riches s'accroît de 1980 à aujourd'hui, dans tous les pays et de façon assez homogène. La trajectoire de la France et des Etats-Unis sont à ce titre assez proches. Les Pays-Bas ou la Suisse ont un arrangement institutionel qui condui à une rémunération relative de splus pauvres particulièrement élevée.
 
-3.  Pour les catégories de revenus entre les 50% les moins riches et les 10% les plus riches (soit 40% de la population), le diagnostic est motigé. En revenus primaires, le décrochage est présent pour certinas pays, mais moins flagrant. Alors que la contribution nette de cette catégorie de la population est presque constante (et proche de 0), le gain à la redistribution a fortement bénéficié aux américains de la même catégorie. En revanche, pour les 10% les plus riches, l'écart s'est fortement creusé, alors qu'il était déjà important en 1980, à part pour l'Allemagne (@fig-percentile, onglet relatif aux USA). Si le décrochage se produit, c'est donc dans ces catégories de revenu. La contribution de la redistribution à cet écart n'est pas très différente aux Etat-Unis et en Europe : les revenus des 10% plus riches sont plus taxés en Europe qu'aux Etats-Unis, dans une proportion importante, tout comme ceux des 1% les plus riches, et les évolutions de ces taxations sont assez parallèles. La France et la Suisse sont des cas particuliers avec une hausse très substancielle de la taxation des plus riches (les 1% notamment).
+3.  Pour les catégories de revenus entre les 50% les moins riches et les 10% les plus riches (soit 40% de la population), le diagnostic est mitigé. En revenus primaires, le décrochage est présent pour certains pays, mais moins flagrant que lorsqu'on regarde le PIB moyen. Si le PIB moyen de la France a décroché de 12 points de PIB, le décrochage n'est que de 4 points pour les revenus intermédiaires. Alors que la contribution nette à la redistribution de cette catégorie de la population est presque constante dans les pays de la zone euro (et proche de 0 @fig-prepost), la catégorie équivalente aux Etats Unis bénéficie maintenant d'une controibution positive de la redistribution.
 
-Ces éléments permettent de revenir sur l'analyse souvent faite d'une performance des Etats-Unis particulièrement forte. Si cette performance est incontestable, elle n'a pas du tout profité aux plus pauvres. Ceci explique le sentiment d'une siutation économique très dégradé sous le mandat Biden et explique en partie le vote Trump. Ainsi, un examen attentif du @fig-percentile, onglet USA, EUZ, GR, CHE indique une croissance du revenu des 50% les moins riches assez nette de 2018 à 2020, interrompue ensuite, avec le COVID et la hausse des prix de l'énergie. Ce phénomène est moins net pour les 40% suivants, mais depuis 2008, la croissance du revenu de la catégore entre les 50% les moins riches aux 10% les plus riches a été plutôt faible comparée aux périodes précendentes. Le même ralentissement s'observe pour les 10% les plus riches, mais il est moins net, ce qui conduit à un accroissement des inégalités entre 2020 et 2023 (le ratio revenu moyen des 10% les plus riches au revenu moyen des 50% les moins riches passe de 8,49 à 9,05 aux Etats-Unis, contre 3,43 et 3,59 en France) alors qu'il avait baissé de 2016 à 2020 (de 9,90 à 8,49). Depuis 2008, ce ratio est plus élevé et a augmenté aux Etats-Unis (8,91 en 2008), alors qu'il a diminué en Allemagne (de 5,21 à 4,97) ou en France (de 4,22 à 3,59). Du point de vue d'un Américain médian, la période récente n'ets pas du tout favorable et la performance économique enviée de ce côté ci de l'Atlantique n'est pas partagée.
+4.  Pour les 10% les plus riches, l'écart s'est fortement creusé, alors qu'il était déjà important en 1980, à part pour l'Allemagne (@fig-percentile, onglet relatif aux USA). Si le décrochage se produit, c'est donc dans ces catégories de revenu. La contribution de la redistribution à cet écart n'est pas très différente aux Etat-Unis et en Europe : les revenus des 10% plus riches sont plus taxés en Europe qu'aux Etats-Unis, dans une proportion importante, tout comme ceux des 1% les plus riches, et les évolutions de ces taxations sont assez parallèles. La France et la Suisse sont des cas particuliers avec une hausse très substantielle de la taxation des plus riches (les 1% notamment).
 
-```{r, results="asis"}
-#| label: fig-prepost
-#| fig-cap: Evolution de la redistribution par catégorie de revenu 
-#| fig-asp: 0.8
+Le @fig-compdis présente les évolutions des 40 dernières années d'une façon synthétique en construisant une distribution globale des pays considérés (USA, GB, Suisse et zone euro) et en calculant les déciles de cette distribution. En 1980, les Etats-Unis étaient caractérisés (après redistribution) par uncontribution un plus plus importante des plus riches (le dernier décile de revenu) et une répartition plutôt homogène des autres catégories. Les pays européens quant a eux étaient soit moins développés (l'Espagne, l'Itale, les autres pays de la zone euro), fortement représentés parmi les premiers déciles. Les pays développés (l'les Pays-Bas, la Suisse, l'Allemagne et la France) étaient sous représentés (voire pas du tout pour certains) dans les premiers déciles et avaient des effectfifs dans le dernier décile supérieurs à leur part dans la population totale.
 
-ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
-  ggplot(dina |> 
-         filter(type=="eurppp", 
-                variable == "aptincj992",
-                country %in% pays,
-                percentile %in% !!percentile)) +
-  aes(x =year, y = prepost, color = country, group=country) +
-  geom_hline(yintercept = 1, linewidth = 0.25, color= "grey") + 
-  geom_line() +
-  facet_wrap(vars(percentile), labeller = as_labeller(labels), nrow = 1) +
-  ofce::scale_color_pays("iso2c") +
-    ggrepel::geom_text_repel(
-      aes(label=label),
-      size= 3 ,
-      hjust =  0.5,
-      nudge_x = 1.5,
-      na.rm=TRUE,
-      max.overlaps = Inf,
-      min.segment.length=0.1,
-      segment.size = 0.1,
-      xlim = c(2023.5, Inf),
-      direction = "y"
-    )+
-    scale_x_continuous(
-      breaks = seq(1980, 2020, by = 20),
-      expand = expansion(add = c(2, 10) ) ) +
-    scale_y_log10(
-      limits = c(0.5, 2),
-      breaks = seq(0.5, 2, 0.25),
-      guide  = guide_axis_logticks()) +
-    guides(color = "none", fill = "none") +
-    xlab(NULL)+
-    ylab("ratio diinc/ptinc")+
-    theme_ofce(
-      panel.spacing = unit(12, 'pt'),
-      axis.text = marquee::element_marquee(size = rel(0.7)),
-      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
-      axis.ticks.length.y = unit(-2, 'pt'),
-      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
-      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
-    ofce::ofce_caption(
-      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
-      code = "https://github.com/xtimbeau/decrochage",
-      note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre" )
-}   
+En 2023, la situation a radicalement changée. Les seuils des déciles se sont étirés fortement vers les hauts revenus. Le seuil inférieur du dernier décile (49,8k€) de 1980 se situe dans le 7^eme^ décile de la distribution de 2023. La part des Etats-Unis dans le premier décile ainsi que dans le dernier a considérablement augmentée (avec un odd ratio de presque 1,5 pour le dernier décile), indiquant une franche polarisation des revenus aux Etats-Unis. L'Espagne -- comme les autres pays de la zone euro -- a accompli un glissement de la distribution des revenus vers la droite, indiquant une progression dans l'échelle des revenus globaux. L'Italie a, au contraire, une part plus importante de sa population dans les premiers déciles(près de 10% de sa population est passée en dessous de la médiane globale). Quand aux pays les plus développés d'Europe, à l'exception des Pays-Bas, se retrouvent concentrés dans l'espace compris entre les 3 premier déciles et les deux derniers déciles.
 
-plots <- list(
-    "USA, EUZ, GB, CHE" = ggpp(c("US","EUZ","GB", "CH")),
-    "DEU, FRA, ITA, ESP, NLD" = ggpp(c("DE","FR","IT","ES","NL")) )
-
-tabsetize(plots)
-```
+L'Europe, à l'exception de l'Italie a proposé un modèle de développement permettant aux plus pauvres de voir significativement augmenter. Pour les revenus intermédiaires, l'Europe apparaît comme un territoire plus certain et propice. Mais les plus riches sont désormais de plus en plus américains, néerlandais ou britanniques.
 
 ```{r, include=FALSE}
 full_dec <- ofce::source_data("wid.R")$fdec
@@ -365,7 +327,8 @@ gg <- map(c(
         aes(tooltip = tooltip,
           data_id = country3, fill = country3),
           alpha=0.7, color = "white", linewidth =0.1, hover_nearest=TRUE) +
-    geom_text(aes(label=country3), position = position_stack(vjust=0.5),
+    geom_text(aes(label=if_else(decile=="d1", country3, "")),
+                  position = position_stack(vjust=0.5),
             size = 2.5, col="white") +
     scale_y_continuous(
       breaks = breaks,
@@ -377,16 +340,101 @@ gg <- map(c(
       panel.grid.major.y = element_line(color = "grey", linewidth = 0.5)  )+
     scale_color_pays("iso2c") +
    #scale_fill_manual(values = c(PrettyCols::prettycols("Teals", 6), "orchid3", "royalblue4")) +
-    guides(fill="none")
+    guides(fill="none") +
+    ofce_caption(
+      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "La distribution globale est construite à partir des centiles de distribution de chaque pays/zones et pour le revenu ajusté (*diinc*) et primaire (*ptinc*) en pondérant par la population du centile. Une intrapolation est faite au milille pour lisser les répartitions entre déciles. L'axe des *y* représente les parts des populations des pays dans la population totale en 2023 dans l'ordre d'affichage des pays."
+    )
+    
   })
+
+# data <- full_dec |>
+#          group_by(year, variable, decile) |>
+#          arrange(desc(country3)) |> 
+#          mutate(
+#            seuilm = ifelse(seuilm<=10, 10, seuilm),
+#            y = popr/(log(seuilp) - log(seuilm)),
+#            ymax = cumsum(y), 
+#            ymin = lag(ymax, default = 0) ) |> 
+#   ungroup()
+#            
+# ggplot(data ) +
+#   facet_grid(rows = vars(year), cols = vars(variable))+
+#   geom_rect(
+#     aes(xmin = seuilm, xmax = seuilp, ymin = ymin, ymax = ymax, fill=country3 ), col="white") +
+#   scale_x_log10(limits = c(5000, NA))+
+#   coord_flip()
 
 ```
 
 ```{r, results="asis"}
 #| label: fig-compdis
 #| fig-cap: Distribution globale (EUZ+USA) en 2023 et 1980
-#| fig-asp: 0.7
+#| fig-asp: 0.9
 
 tabsetize(gg)
 
+```
+
+Ces éléments permettent de revenir sur l'analyse souvent faite d'une performance des Etats-Unis particulièrement forte. Si cette performance est incontestable, elle n'a pas du tout profité aux plus pauvres. Ceci explique le sentiment d'une situation économique très dégradé sous le mandat Biden et explique en partie le vote Trump. Ainsi, un examen attentif du @fig-percentile, onglet USA, EUZ, GR, CHE indique une croissance du revenu des 50% les moins riches assez nette de 2018 à 2020, interrompue ensuite, avec le COVID et la hausse des prix de l'énergie. Ce phénomène est moins net pour les 40% suivants, mais depuis 2008, la croissance du revenu de la catégorie entre les 50% les moins riches aux 10% les plus riches a été plutôt faible comparée aux périodes précédentes. Le même ralentissement s'observe pour les 10% les plus riches, mais il est moins net, ce qui conduit à un accroissement des inégalités entre 2020 et 2023 (le ratio revenu moyen des 10% les plus riches au revenu moyen des 50% les moins riches passe de 8,49 à 9,05 aux Etats-Unis, contre 3,43 et 3,59 en France) alors qu'il avait baissé de 2016 à 2020 (de 9,90 à 8,49). Depuis 2008, ce ratio est plus élevé et a augmenté aux Etats-Unis (8,91 en 2008), alors qu'il a diminué en Allemagne (de 5,21 à 4,97) ou en France (de 4,22 à 3,59). Du point de vue d'un Américain médian, la période récente n’est pas du tout favorable et la performance économique enviée de ce côté- ci de l'Atlantique n'est pas partagée.
+
+Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps (@godechot2012), la hausse des hautes rémunérations (dans la finance) et l'hypothèse reliant productivité marginale et salaire imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées.
+
+```{r, results="asis"}
+#| label: fig-prepost
+#| fig-cap: Ratio revenu ajusté sur revenu primaire par catégorie de revenu 
+#| fig-asp: 0.9
+
+ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
+  ggplot(dina |> 
+         filter(type=="eurppp", 
+                variable == "aptincj992",
+                country %in% pays,
+                percentile %in% !!percentile)) +
+  aes(x =year, y = prepost, color = country, group=country) +
+  geom_hline(yintercept = 1, linewidth = 0.25, color= "grey") + 
+  geom_line() +
+  facet_wrap(vars(percentile), labeller = as_labeller(labels), nrow = 1) +
+  ofce::scale_color_pays("iso2c") +
+    ggrepel::geom_text_repel(
+      aes(label=label),
+      size= 3 ,
+      hjust =  0.5,
+      nudge_x = 1.5,
+      na.rm=TRUE,
+      max.overlaps = Inf,
+      min.segment.length=0.1,
+      segment.size = 0.1,
+      xlim = c(2023.5, Inf),
+      direction = "y"
+    )+
+    scale_x_continuous(
+      breaks = seq(1980, 2020, by = 20),
+      expand = expansion(add = c(2, 10) ) ) +
+    scale_y_log10(
+      limits = c(0.5, 2),
+      breaks = seq(0.5, 2, 0.25),
+      guide  = guide_axis_logticks()) +
+    guides(color = "none", fill = "none") +
+    xlab(NULL)+
+    ylab("ratio diinc/ptinc")+
+    theme_ofce(
+      panel.spacing = unit(12, 'pt'),
+      axis.text = marquee::element_marquee(size = rel(0.7)),
+      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+      axis.ticks.length.y = unit(-2, 'pt'),
+      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+    ofce::ofce_caption(
+      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "Ratio entre *diinc* (revenu disponible ajusté, après taxation et redistribution) et *ptinc* (revenu primaire incluant les salaires différés) pour différentes catégories de revenus. Lorsque le ratio est égal à 1, les individus reçoivent autant de prestations et de dépenses publiques qu'ils payent d'impôts (directs et indirects). Lorsque le ratio est supérieur à 1, ils reçoivent plus qu'ils ne payent. Inversement, lorsque le ratio est inférieur à 1, ils ont une contribution nette positive à la resdistribution." )
+}   
+
+plots <- list(
+    "USA, EUZ, GB, CHE" = ggpp(c("US","EUZ","GB", "CH")),
+    "DEU, FRA, ITA, ESP, NLD" = ggpp(c("DE","FR","IT","ES","NL")) )
+
+tabsetize(plots)
 ```

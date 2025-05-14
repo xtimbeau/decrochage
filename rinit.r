@@ -143,7 +143,7 @@ girafy <- function(plot, r=2.5, o = 0.5, out=TRUE,  ...) {
       girafe(ggobj = plot) |>
         girafe_options(
           opts_hover_inv(css = glue("opacity:{o};")),
-          opts_hover(css = glue("r:{r}px;")),
+          opts_hover(css = glue("r:{r}px;"), nearest_distance = 10),
           opts_tooltip(css = tooltip_css)) |>
         girafe_options(...)
     )
@@ -496,12 +496,15 @@ tabsetize <- function(list, facety = TRUE, cap = TRUE, girafy = TRUE, asp = NULL
         else
           asp_txt <- ""
         lbl <- glue("'{id}'")
-        if(girafy)
+        if(girafy) {
           plot <- girafy(.x, r=r)
-        else
+          lib <- "library(ggiraph)\n"
+        }
+        else {
           plot <- .x
+          lib <- ""}
         rendu <- knitr::knit(
-          text = str_c("```{r ", lbl, asp_txt," }\nplot \n```"),
+          text = str_c("```{r ", lbl, asp_txt," }\n", lib, "plot \n```"),
           quiet=TRUE)
         cat(rendu, sep="\n")
       }
