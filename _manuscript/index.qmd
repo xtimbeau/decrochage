@@ -379,12 +379,12 @@ tabsetize(gg)
 
 Ces éléments permettent de revenir sur l'analyse souvent faite d'une performance des Etats-Unis particulièrement forte. Si cette performance est incontestable, elle n'a pas du tout profité aux plus pauvres. Ceci explique le sentiment d'une situation économique très dégradé sous le mandat Biden et explique en partie le vote Trump. Ainsi, un examen attentif du @fig-percentile, onglet USA, EUZ, GR, CHE indique une croissance du revenu des 50% les moins riches assez nette de 2018 à 2020, interrompue ensuite, avec le COVID et la hausse des prix de l'énergie. Ce phénomène est moins net pour les 40% suivants, mais depuis 2008, la croissance du revenu de la catégorie entre les 50% les moins riches aux 10% les plus riches a été plutôt faible comparée aux périodes précédentes. Le même ralentissement s'observe pour les 10% les plus riches, mais il est moins net, ce qui conduit à un accroissement des inégalités entre 2020 et 2023 (le ratio revenu moyen des 10% les plus riches au revenu moyen des 50% les moins riches passe de 8,49 à 9,05 aux Etats-Unis, contre 3,43 et 3,59 en France) alors qu'il avait baissé de 2016 à 2020 (de 9,90 à 8,49). Depuis 2008, ce ratio est plus élevé et a augmenté aux Etats-Unis (8,91 en 2008), alors qu'il a diminué en Allemagne (de 5,21 à 4,97) ou en France (de 4,22 à 3,59). Du point de vue d'un Américain médian, la période récente n’est pas du tout favorable et la performance économique enviée de ce côté- ci de l'Atlantique n'est pas partagée.
 
-Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps (@godechot2012), la hausse des hautes rémunérations (dans la finance) et l'hypothèse reliant productivité marginale et salaire imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées.
+Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps [@godechot2012], la hausse des hautes rémunérations (en particulier dans la finance) et l'hypothèse assimilant productivité marginale et salaire individuel imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées.
 
 ```{r, results="asis"}
 #| label: fig-prepost
 #| fig-cap: Ratio revenu ajusté sur revenu primaire par catégorie de revenu 
-#| fig-asp: 0.8
+#| fig-asp: 0.9
 
 ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
   ggplot(dina |> 
@@ -394,7 +394,7 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
                 percentile %in% !!percentile)) +
   aes(x =year, y = prepost, color = country, group=country) +
   geom_hline(yintercept = 1, linewidth = 0.25, color= "grey") + 
-  geom_line() +
+  geom_line_intercative(aes(data_id = country)) +
   facet_wrap(vars(percentile), labeller = as_labeller(labels), nrow = 1) +
   ofce::scale_color_pays("iso2c") +
     ggrepel::geom_text_repel(
@@ -429,7 +429,7 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
     ofce::ofce_caption(
       source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
-      note = "Ratio entre *diinc* (revenu disponible ajusté, après taxation et redistribution) et le revenu primaire (incluant les salaires différés) et *ptinc* pour différentes catégories de revenus. Lorsque le ratio est égal à 1, les individus reçoivent autant de prestations et de dépenses publiques qu'ils payent d'impôts (directs et indirects). Lorsque le ratio est supérieur à 1, ils reçoivent plus qu'ils ne payent. Inversement, lorsque le ratio est inférieur à 1, ils ont une contribution nette positive à la resdistribution." )
+      note = "Ratio entre *diinc* (revenu disponible ajusté, après taxation et redistribution) et *ptinc* (revenu primaire incluant les salaires différés) pour différentes catégories de revenus. Lorsque le ratio est égal à 1, les individus reçoivent autant de prestations et de dépenses publiques qu'ils payent d'impôts (directs et indirects). Lorsque le ratio est supérieur à 1, ils reçoivent plus qu'ils ne payent. Inversement, lorsque le ratio est inférieur à 1, ils ont une contribution nette positive à la resdistribution." )
 }   
 
 plots <- list(
