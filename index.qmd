@@ -16,7 +16,7 @@ ofce::init_qmd()
 
 ## Le rapport Draghi
 
-Publié au printemps 2024, le rapport Draghi a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation[^1]) et en parité de pouvoir d'achat (donc comparable entre zones géographiques[^2]) et par tête (donc corrigé de la démographie[^3]) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 15% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un demi point par an, la zone euro semble perdre du terrain.
+Publié au printemps 2024, le rapport Draghi (@draghi) a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation[^1]) et en parité de pouvoir d'achat (donc comparable entre zones géographiques[^2]) et par tête (donc corrigé de la démographie[^3]) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 15% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un demi point par an, la zone euro semble perdre du terrain.
 
 [^1]: Les données considérées sont donc les PIB en valeur, divisés par le déflateur du PIB qui peut différer des indices de prix à la consommation. De nombreuses réserves s'appliquent aux déflateurs et en particulier à leur utilisation pour des comparaisons internationales du fait de méthodes non homogénéisées entre les instituts statistiques.
 
@@ -107,7 +107,7 @@ ggpib <- function(pays, variable) {
 plots <- list(
     "USA, EUZ, GB, CHE" = ggpib(c("USA","EUZ", "GBR", "CHE"), "ppp"),
     "DEU, FRA, ITA, ESP, NLD" = ggpib(c("DEU", "FRA", "ITA", "ESP", "NLD"), "ppp"),
-    "relatif aux USA" = ggpib(c("USA", "GBR", "CHE","DEU", "FRA", "ITA", "ESP", "NLD"), "us1"))
+    "relatif aux USA" = ggpib(c("USA", "GBR", "CHE","EUZ", "DEU", "FRA", "ITA", "ESP", "NLD"), "us1"))
 
 ```
 
@@ -147,7 +147,7 @@ Pour un contrepoint aux évolutions agrégées, nous utilisons ici les notions d
 
 Comme pour les données agrégées, nous considérons les évolutions en valeur déflatée (par le déflateur du PIB en général, non différencié selon les catégories de revenus), ramenées à la parité de pouvoir d'achat (2023 comme une année de référence). Comme évoqué en note de bas de page, ces choix masquent des difficultés de méthode non résolus à ce stade, et en ajoutent quelques uns, comme par exemple le fait de ne pas différencier les indices de prix par catégorie de revenu alors que les coefficients budgétaires sont hétérogènes.
 
-## Le décrochage des plus riches
+### Le décrochage des plus riches
 
 ```{r, include=FALSE}
 dina <- ofce::source_data("wid.R")$dina
