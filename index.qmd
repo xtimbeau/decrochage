@@ -333,25 +333,31 @@ gg <- map(c(
       panel.grid.major.y = element_line(color = "grey", linewidth = 0.5)  )+
     scale_color_pays("iso2c") +
    #scale_fill_manual(values = c(PrettyCols::prettycols("Teals", 6), "orchid3", "royalblue4")) +
-    guides(fill="none")
+    guides(fill="none") +
+    ofce_caption(
+      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre de la zone euro. La distribution globale est construite à partir des centiles de distribution de chaque pays/zones en pondérant par la population du centile. Une intrapolation est faite au milille pour lisser les répartitions entre déciles. L'axe des *y* représente les part des populations des pays dans la population totale en 2023 dans l'ordre d'affichage des pays."
+    )
+    
   })
 
-data <- full_dec |>
-         group_by(year, variable, decile) |>
-         arrange(desc(country3)) |> 
-         mutate(
-           seuilm = ifelse(seuilm<=10, 10, seuilm),
-           y = popr/(log(seuilp) - log(seuilm)),
-           ymax = cumsum(y), 
-           ymin = lag(ymax, default = 0) ) |> 
-  ungroup()
-           
-ggplot(data ) +
-  facet_grid(rows = vars(year), cols = vars(variable))+
-  geom_rect(
-    aes(xmin = seuilm, xmax = seuilp, ymin = ymin, ymax = ymax, fill=country3 ), col="white") +
-  scale_x_log10(limits = c(5000, NA))+
-  coord_flip()
+# data <- full_dec |>
+#          group_by(year, variable, decile) |>
+#          arrange(desc(country3)) |> 
+#          mutate(
+#            seuilm = ifelse(seuilm<=10, 10, seuilm),
+#            y = popr/(log(seuilp) - log(seuilm)),
+#            ymax = cumsum(y), 
+#            ymin = lag(ymax, default = 0) ) |> 
+#   ungroup()
+#            
+# ggplot(data ) +
+#   facet_grid(rows = vars(year), cols = vars(variable))+
+#   geom_rect(
+#     aes(xmin = seuilm, xmax = seuilp, ymin = ymin, ymax = ymax, fill=country3 ), col="white") +
+#   scale_x_log10(limits = c(5000, NA))+
+#   coord_flip()
 
 ```
 
@@ -416,7 +422,7 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
     ofce::ofce_caption(
       source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
-      note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre" )
+      note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre de la zone euro." )
 }   
 
 plots <- list(
