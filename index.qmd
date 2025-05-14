@@ -14,9 +14,13 @@ bibliography: references.bib
 ofce::init_qmd()
 ```
 
+Selon le rapport Draghi (@draghi2024), l'Europe décroche. L'analyse sectorielle, habituelle, conduit à diagnostiquer un retard technologique que l'on peut relier à des facteurs structurels. L'analyse macroéconomique pointe plutôt une mauvaise combinaison de politiques macroéconomiques. Nous proposons ici une analyse du point de vue des revenus (avant et après redistribution) et de leur distribution le long de de l'échelle des revenus. Du point de vue des 50% les plus pauvres, l'Europe est un modèle attractif et robuste. La trajectoire de l'Espagne est celle d'un développement réduisant les inégalités alors que les Pays-Bas combinent forte redistribution et croissance partagée. La France réussit à maintenir un modèle plutôt égalitaire, alors que les Etats-Unis sont marqués par une polarisation extrême. La forte croissance américaine profite surtout aux plus riches et aux très riches, laissant sur le côté une grande partie de la population sans qu'aucun ruissellement ne leur bénéficie.
+
+Peut-on avoir la croissance (moyenne ou agrégée) des Etats-Unis sans la hausse des inégalités ?
+
 ## Le rapport Draghi
 
-Publié au printemps 2024, le rapport Draghi (@draghi) a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation[^1]) et en parité de pouvoir d'achat (donc comparable entre zones géographiques[^2]) et par tête (donc corrigé de la démographie[^3]) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 15% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un demi point par an, la zone euro semble perdre du terrain.
+Publié au printemps 2024, le rapport Draghi (@draghi2024) a rappelé des éléments connus. Depuis la crise financière de 2008, l'Europe (ici la zone euro) décroche des Etat-Unis lorsqu'on utilise le Produit intérieur brut en volume (donc corrigé de l'inflation[^1]) et en parité de pouvoir d'achat (donc comparable entre zones géographiques[^2]) et par tête (donc corrigé de la démographie[^3]) comme indicateur (@fig-pibcap). Alors que l'écart entre les Etats-Unis et la zone euro n'était que de 14% en 2008, à peu près constant depuis la création de la zone euro, il est aujourd'hui (en 2024) de 25%. Lentement, au rythme d'un peu plus d'un demi point par an, la zone euro semble perdre du terrain.
 
 [^1]: Les données considérées sont donc les PIB en valeur, divisés par le déflateur du PIB qui peut différer des indices de prix à la consommation. De nombreuses réserves s'appliquent aux déflateurs et en particulier à leur utilisation pour des comparaisons internationales du fait de méthodes non homogénéisées entre les instituts statistiques.
 
@@ -61,9 +65,12 @@ ggpib <- function(pays, variable) {
     ) 
   }
   if(variable=="us1") { 
-    interactive <- NULL
-    ylab <- ylab("PIB, US$2021 ppp par habitant, USA = 1")
+    interactive <- geom_point_interactive(
+      aes(tooltip = tooltip, data_id = year, fill = country),
+      shape = 21, stroke = 0.25, col = "white", hover_nearest = TRUE)
+    ylab <- ylab("PIB, US$2021 ppp par habitant, USA = 100%")
     scaley <- scale_y_log10(
+      labels = scales::label_number(scale = 100, suffix="%"),
       guide  = guide_axis_logticks()
     ) 
   }
@@ -119,7 +126,7 @@ plots <- list(
 tabsetize(plots, r=2)
 ```
 
-Le contraste à l'intérieur de la zone euro est important, entre une performance plus importante des Pays-Bas (un écart de 7% avec les Etats Unis en 2024) et l'Espagne (un écart de 36%). Mais c'est bien autour de 2008 que les choses se jouent (onglet relatif aux USA sur le @fig-pibcap), même si pour certains pays (la France et l’Italie notamment) le décrochage se produit antérieurement, mais probablement pour des raisons démographiques) : depuis 2008, les Pays-Bas perdent 13 points de PIB par tête par rapport aux Etats-Unis, l'Allemagne et la France 12 points, l'Italie et l'Espagne 15 et 10 points respectivement. C'est bien la simultanéité de cette évolution qui la rend frappante, d'autant qu'elle ne se limite pas à l'Union Européenne, comme l'indiquent les trajectoire de la Suisse ou du Royaume-Uni.
+Le contraste à l'intérieur de la zone euro est important, entre une performance plus importante des Pays-Bas (un écart de 7% avec les Etats Unis en 2024) et l'Espagne (un écart de 36%). Mais c'est bien autour de 2008 que les choses se jouent (onglet relatif aux USA sur le @fig-pibcap), même si pour certains pays (la France et l’Italie notamment) le décrochage se produit antérieurement, mais probablement pour des raisons démographiques) : depuis 2008, les Pays-Bas perdent 12 points de PIB par tête par rapport aux Etats-Unis, l'Allemagne et la France 11 points, l'Italie et l'Espagne 16 et 10 points respectivement (10 point pour la Zone euro). C'est bien la simultanéité de cette évolution qui la rend frappante, d'autant qu'elle ne se limite pas à l'Union Européenne, comme l'indiquent les trajectoire de la Suisse ou du Royaume-Uni.
 
 De nombreuses explications ont été avancées pour expliquer le décrochage depuis 2008. On peut citer :
 
@@ -129,7 +136,7 @@ De nombreuses explications ont été avancées pour expliquer le décrochage dep
 
 -   Dans la même lignée, l'explication selon laquelle la lourdeur du système social et la redistribution qu'elle implique pèserait sur la compétitivité, l'allocation des ressources de la dépense publique et les effets négatif sur l'offre de travail conduisant par exemple les plus productifs à quitter l'Europe pour d'autres cieux.
 
--   Une explication par le prix de l'énergie ( @blot2025). D'un côté la montée en puissance du marché carbone EU ETS (Emission Trade System) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir @geerolf2022) ou encore l'*Inflation Reduction Act* (2022, voir @cae2023ira). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis (@draghi2024), mais la marche est suffisamment importante pour que l'évolution remonte à quelques années auparavant.
+-   Une explication par le prix de l'énergie ( @blot2025). D'un côté la montée en puissance du marché carbone EU ETS (*European Union* *Emission Trade System*) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir @geerolf2022) ou encore l'*Inflation Reduction Act* (2022, voir @cae2023ira). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis (@draghi2024), mais la marche est suffisamment importante pour que l'évolution remonte à quelques années auparavant.
 
 -   Une explication technologique, selon laquelle le décrochage est lié à une vague d'innovation (digitalisation et services réseaux, robotique, intelligence artificielle, calcul massif mais aussi dans d'autres secteurs comme la production d'énergie (éolienne, panneaux solaires), les batteries électriques, biotechnologies) dont le coeur se situe entre la Chine et les Etats-Unis. La combinaison d'un système éducatif supérieur très performant, d'un système de financement de l'innovation efficace, d'une commande publique importante qui complète un marché à même de les absorber, d'un protectionnisme agressif sur ces technologies et de technologies partiellement caractérisées par des effets de réseau important (@dric2025).
 
@@ -262,7 +269,7 @@ Le @fig-compdis présente les évolutions des 40 dernières années d'une façon
 
 En 2023, la situation a radicalement changée. Les seuils des déciles se sont étirés fortement vers les hauts revenus. Le seuil inférieur du dernier décile (49,8k€) de 1980 se situe dans le 7^eme^ décile de la distribution de 2023. La part des Etats-Unis dans le premier décile ainsi que dans le dernier a considérablement augmentée (avec un odd ratio de presque 1,5 pour le dernier décile), indiquant une franche polarisation des revenus aux Etats-Unis. L'Espagne -- comme les autres pays de la zone euro -- a accompli un glissement de la distribution des revenus vers la droite, indiquant une progression dans l'échelle des revenus globaux. L'Italie a, au contraire, une part plus importante de sa population dans les premiers déciles(près de 10% de sa population est passée en dessous de la médiane globale). Quand aux pays les plus développés d'Europe, à l'exception des Pays-Bas, se retrouvent concentrés dans l'espace compris entre les 3 premier déciles et les deux derniers déciles.
 
-L'Europe, à l'exception de l'Italie a proposé un modèle de développement permettant aux plus pauvres de voir sginificativement augmenter. Pour les revenus intermédiaires, l'Europe apparaît comme un territoire plus certain et propice. Mais les plus riches sont désormais de plus en plus américains, néerlandais ou britaniques.
+L'Europe, à l'exception de l'Italie a proposé un modèle de développement permettant aux plus pauvres de voir significativement augmenter. Pour les revenus intermédiaires, l'Europe apparaît comme un territoire plus certain et propice. Mais les plus riches sont désormais de plus en plus américains, néerlandais ou britanniques.
 
 ```{r, include=FALSE}
 full_dec <- ofce::source_data("wid.R")$fdec
@@ -337,7 +344,7 @@ gg <- map(c(
     ofce_caption(
       source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
-      note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre de la zone euro. La distribution globale est construite à partir des centiles de distribution de chaque pays/zones en pondérant par la population du centile. Une intrapolation est faite au milille pour lisser les répartitions entre déciles. L'axe des *y* représente les part des populations des pays dans la population totale en 2023 dans l'ordre d'affichage des pays."
+      note = "La distribution globale est construite à partir des centiles de distribution de chaque pays/zones et pour le revenu ajusté (*diinc*) et primaire (*ptinc*) en pondérant par la population du centile. Une intrapolation est faite au milille pour lisser les répartitions entre déciles. L'axe des *y* représente les parts des populations des pays dans la population totale en 2023 dans l'ordre d'affichage des pays."
     )
     
   })
@@ -364,7 +371,7 @@ gg <- map(c(
 ```{r, results="asis"}
 #| label: fig-compdis
 #| fig-cap: Distribution globale (EUZ+USA) en 2023 et 1980
-#| fig-asp: 0.7
+#| fig-asp: 0.9
 
 tabsetize(gg)
 
@@ -372,12 +379,12 @@ tabsetize(gg)
 
 Ces éléments permettent de revenir sur l'analyse souvent faite d'une performance des Etats-Unis particulièrement forte. Si cette performance est incontestable, elle n'a pas du tout profité aux plus pauvres. Ceci explique le sentiment d'une situation économique très dégradé sous le mandat Biden et explique en partie le vote Trump. Ainsi, un examen attentif du @fig-percentile, onglet USA, EUZ, GR, CHE indique une croissance du revenu des 50% les moins riches assez nette de 2018 à 2020, interrompue ensuite, avec le COVID et la hausse des prix de l'énergie. Ce phénomène est moins net pour les 40% suivants, mais depuis 2008, la croissance du revenu de la catégorie entre les 50% les moins riches aux 10% les plus riches a été plutôt faible comparée aux périodes précédentes. Le même ralentissement s'observe pour les 10% les plus riches, mais il est moins net, ce qui conduit à un accroissement des inégalités entre 2020 et 2023 (le ratio revenu moyen des 10% les plus riches au revenu moyen des 50% les moins riches passe de 8,49 à 9,05 aux Etats-Unis, contre 3,43 et 3,59 en France) alors qu'il avait baissé de 2016 à 2020 (de 9,90 à 8,49). Depuis 2008, ce ratio est plus élevé et a augmenté aux Etats-Unis (8,91 en 2008), alors qu'il a diminué en Allemagne (de 5,21 à 4,97) ou en France (de 4,22 à 3,59). Du point de vue d'un Américain médian, la période récente n’est pas du tout favorable et la performance économique enviée de ce côté- ci de l'Atlantique n'est pas partagée.
 
-Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps (@godechot2012), la hausse des hautes rémunérations (dans la finance) et l'hypothèse reliant productivité marginale et salaire imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées.
+Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps [@godechot2012], la hausse des hautes rémunérations (en particulier dans la finance) et l'hypothèse assimilant productivité marginale et salaire individuel imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées.
 
 ```{r, results="asis"}
 #| label: fig-prepost
-#| fig-cap: Evolution de la redistribution par catégorie de revenu 
-#| fig-asp: 0.8
+#| fig-cap: Ratio revenu ajusté sur revenu primaire par catégorie de revenu 
+#| fig-asp: 0.9
 
 ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
   ggplot(dina |> 
@@ -387,7 +394,8 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
                 percentile %in% !!percentile)) +
   aes(x =year, y = prepost, color = country, group=country) +
   geom_hline(yintercept = 1, linewidth = 0.25, color= "grey") + 
-  geom_line() +
+  geom_line_interactive(aes(
+    data_id = country)) +
   facet_wrap(vars(percentile), labeller = as_labeller(labels), nrow = 1) +
   ofce::scale_color_pays("iso2c") +
     ggrepel::geom_text_repel(
@@ -422,7 +430,7 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
     ofce::ofce_caption(
       source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
-      note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre de la zone euro." )
+      note = "Ratio entre *diinc* (revenu disponible ajusté, après taxation et redistribution) et *ptinc* (revenu primaire incluant les salaires différés) pour différentes catégories de revenus. Lorsque le ratio est égal à 1, les individus reçoivent autant de prestations et de dépenses publiques qu'ils payent d'impôts (directs et indirects). Lorsque le ratio est supérieur à 1, ils reçoivent plus qu'ils ne payent. Inversement, lorsque le ratio est inférieur à 1, ils ont une contribution nette positive à la resdistribution." )
 }   
 
 plots <- list(
