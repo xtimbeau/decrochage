@@ -156,7 +156,8 @@ dina <- bind_rows(data.euz, data.oth2) |>
   pivot_longer(cols = c(eurppp, us1), names_to = "type", values_to = "revenu") |>
   group_by(country, year, percentile, type) |>
   mutate(prepost = revenu[variable=="adiincj992"]/revenu[variable=="aptincj992"]) |>
-  ungroup()
+  ungroup() |>
+  mutate(year = year + 0.5)
 
 dmer <- cross_join(tibble(percentile = dpercentile), tibble(mil = str_c("m", 1:10))) |>
   transmute(percentile, dmil = str_c(percentile, mil))
