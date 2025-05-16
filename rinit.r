@@ -654,3 +654,14 @@ cols_hide_pdf <- function(tbl, col) {
 }
 
 prev <- source_data("fiches/data_pays/data_vars.R")
+
+`-.gg` <- function(plot, layer) {
+  if (missing(layer)) {
+    stop("Cannot use `-.gg()` with a single argument. Did you accidentally put - on a new line?")
+  }
+  if (!is.ggplot(plot)) {
+    stop('Need a plot on the left side')
+  }
+  plot$layers = c(layer, plot$layers)
+  plot
+}

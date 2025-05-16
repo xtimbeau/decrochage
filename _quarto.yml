@@ -8,7 +8,7 @@ manuscript:
   code-links:
     - text: Github
       icon: github
-      href: https::github.com/xtimbeau/decrochage
+      href: https://github.com/xtimbeau/decrochage
     - text: Données OCDE
       icon: file-code
       href: oecd.r
