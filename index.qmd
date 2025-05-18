@@ -303,7 +303,7 @@ gge <- function(pays, variable = "aptincj992") {
     geom_point_interactive(
       aes( tooltip = tooltip,
            data_id = year, fill = country),
-      shape=21, color="white", stroke = 0.1, size=0.75 ,
+      shape=21, color="white", stroke = 0.25,
       hover_nearest = TRUE) +
     scale_y_log10(
       limits = c(2,20),
@@ -344,7 +344,7 @@ eplots <- list(
 #| fig-cap: Evolution des inégalités (S10/S50) 
 #| fig-asp: 0.9
 
-tabsetize2(eplots)
+tabsetize2(eplots, girafy = TRUE)
 ```
 
 
