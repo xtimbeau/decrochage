@@ -280,7 +280,7 @@ evol <- dina |>
     clabel = countrycode::countrycode(country, "iso2c", "country.name.fr"),
     clabel = ifelse(country=="EUZ", "Zone euro", clabel),
     label = ifelse(year==max(year), country, NA_character_),
-    lline = glue("<b>Revenu moyen des 10% les plus riches sur le revenu moyen des 50% les plus pauvres : {round(s10s50*100)}%"),
+    lline = glue("<b>Revenu moyen des 10% les plus riches sur le revenu moyen des 50% les plus pauvres : {round(s10s50,2)}"),
     tooltip = glue("<b>{clabel}</b>
                    {year}
                    {lline}"))
@@ -344,9 +344,8 @@ eplots <- list(
 #| fig-cap: Evolution des inégalités (S10/S50) 
 #| fig-asp: 0.9
 
-tabsetize2(eplots, girafy = TRUE)
+tabsetize2(eplots, girafy = TRUE, asp = 0.9)
 ```
-
 
 Le @fig-compdis présente les évolutions des 40 dernières années d'une façon synthétique en construisant une distribution globale des pays considérés (USA, GB, Suisse et zone euro) et en calculant les déciles de cette distribution. En 1980, les Etats-Unis étaient caractérisés (après redistribution) par une part plus importante des plus riches (le dernier décile de revenu) et une répartition plutôt homogène des autres catégories. Les pays européens quant a eux étaient soit moins développés (l'Espagne, l'Itale, les autres pays de la zone euro), fortement représentés parmi les premiers déciles soit développés (les Pays-Bas, la Suisse, l'Allemagne et la France) sous représentés (voire pas du tout pour certains) dans les premiers déciles et des effectifs dans le dernier décile supérieurs à leurs parts dans la population totale.
 
