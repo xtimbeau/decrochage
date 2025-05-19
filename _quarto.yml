@@ -1,10 +1,10 @@
 project:
-  type: manuscript
+  type: website
   title: "decrochage"
 
 editor: visual
 
-manuscript:
+website:
   code-links:
     - text: Github
       icon: github
@@ -15,6 +15,9 @@ manuscript:
     - text: Données WID
       icon: file-code
       href: wid.r
+    - text: English version
+      icon: file-code
+      href: index.en.html
 
 
 format:

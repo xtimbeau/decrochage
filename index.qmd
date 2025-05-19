@@ -120,7 +120,7 @@ plots <- list(
 
 ```{r, results="asis"}
 #| label: fig-pibcap
-#| fig-cap: PIB par habitant
+#| fig-cap: PIB moyen par habitant
 #| fig-asp: 0.7
 
 tabsetize(plots, r=2)
@@ -138,7 +138,7 @@ De nombreuses explications ont été avancées pour expliquer le décrochage dep
 
 -   Dans la même lignée, l'explication selon laquelle la lourdeur du système social et la redistribution qu'elle implique pèserait sur la compétitivité (qui n'explique pas l'excédent courant européen et s'applique généralement à la France seulement), l'allocation des ressources de la dépense publique et les effets négatif sur l'offre de travail conduisant par exemple les plus productifs à quitter l'Europe pour d'autres cieux.
 
--   Une explication par le prix de l'énergie [@blot2025]. D'un côté la montée en puissance du marché carbone EU ETS (*European Union* *Emission Trade System*) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement [@epaulard2024]), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir @geerolf2022) ou encore l'*Inflation Reduction Act* (2022, voir @cae2023ira). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis [@draghi2024, @epaulard2024], mais la marche est suffisamment importante pour que l'évolution remonte à quelques années auparavant.
+-   Une explication par le prix de l'énergie. D'un côté la montée en puissance du marché carbone EU ETS (*European Union Emission Trade System*) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement [@epaulard2024]), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir @geerolf2022) ou encore l'*Inflation Reduction Act* (2022, voir @cae2023ira). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis [@draghi2024; @epaulard2024], mais la marche est suffisamment importante pour que l'évolution remonte à quelques années auparavant.
 
 -   Une explication technologique, selon laquelle le décrochage est lié à une vague d'innovation (digitalisation et services réseaux, robotique, intelligence artificielle, calcul massif mais aussi dans d'autres secteurs comme la production d'énergie (éolienne, panneaux solaires), les batteries électriques, biotechnologies) dont le coeur se situe entre la Chine et les Etats-Unis. La combinaison d'un système éducatif supérieur très performant, d'un système de financement de l'innovation efficace, d'une commande publique importante qui complète un marché à même de les absorber, d'un protectionnisme agressif sur ces technologies et de technologies partiellement caractérisées par des effets de réseau important [@dric2025; @dric2022; @dric2016].
 
@@ -240,7 +240,7 @@ gg1 <- function(pays, variable = "aptincj992", type = "eurppp",
 
 ```{r, results="asis"}
 #| label: fig-percentile
-#| fig-cap: Evolution des revenus avant et après taxation, par catégories de revenu 
+#| fig-cap: Revenus avant et après taxation, par catégories de revenu 
 #| fig-asp: 0.9
 
 plots <- list(
@@ -343,7 +343,7 @@ eplots <- list(
 
 ```{r, results="asis"}
 #| label: fig-evol
-#| fig-cap: Evolution des inégalités (S10/S50) 
+#| fig-cap: Evolution des inégalités de revenu (S10/S50) 
 #| fig-asp: 0.9
 
 tabsetize2(eplots, girafy = TRUE, asp = 0.9)
@@ -513,7 +513,7 @@ gg2 <- map(c(
 
 ```{r, results="asis"}
 #| label: fig-compdis
-#| fig-cap: Distribution globale (EUZ+USA) en 2023 et 1980
+#| fig-cap: Distribution globale des revenus (EUZ, UK, CHE,           USA) en 2023 et 1980
 #| fig-asp: 0.9
 
 tabsetize(gg2)

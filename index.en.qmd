@@ -1,0 +1,609 @@
+---
+title: Is Europe falling behind the United States?
+author:
+- Xavier Timbeau
+date: now
+keywords: []
+keep-md: true
+comments:
+  hypothesis: true
+bibliography: references.bib
+---
+
+```{r, include=FALSE}
+ofce::init_qmd()
+```
+
+According to the Draghi report [@draghi2024] Europe is falling behind. The usual sectoral analysis diagnoses a technological lag that can be linked to structural factors. Macroeconomic analysis, on the other hand, points to a poor combination of macroeconomic policies. We propose here an analysis from the point of view of individual incomes and their distribution. From the point of view of the poorest 50%, Europe is a more attractive model than the United States. Spain's trajectory is one of development that reduces inequality, while the Netherlands combines strong redistribution with shared growth. France has managed to maintain a fairly egalitarian model (at the cost of high taxation of the richest 1%), while the United States is marked by extreme polarisation. Strong growth in the United States mainly benefits the richest and the very rich, leaving a large part of the population on the sidelines without any trickle-down benefits.
+
+Can we have the (average or aggregate) growth of the United States without rising inequality?
+
+## The Draghi report
+
+Published in spring 2024, the Draghi report [@draghi2024] report reiterated some well-known facts. Since the financial crisis of 2008, Europe (in this case, the Eurozone) has been lagging behind the United States when Gross Domestic Product in volume terms (i.e. adjusted for inflation) is used. [^1] ) and in purchasing power parity (i.e. comparable between geographical areas [^2] ) and per capita (i.e. adjusted for demographics [^3] ) as an indicator (@fig- gdpcap). While the gap between the United States and the Eurozone was only 14% in 2008, more or less constant since the creation of the Eurozone, it is now (in 2024) 25%. Slowly, at a rate of just over half a point (0.7) a year, the Eurozone seems to be losing ground.
+
+[^1]: The data considered are therefore GDP in value, divided by the GDP deflator, which may differ from consumer price indices. Numerous reservations apply to deflators and in particular to their use for international comparisons, due to the fact that methods are not standardised between statistical institutes.
+
+[^2]: The method consists of using for a base year (here 2021) the purchasing power parity indices constructed by the World Bank from the value of baskets of identical goods and services in different countries. PPP indices are not constructed in the same way as national accounts deflators. It is assumed that these differences in method are of a lesser order of magnitude than the changes measured.
+
+[^3]: There is still a significant demographic difference between the countries, since we are not taking into account the division of the population into active and inactive (young people, senior citizens, adults inactive).
+
+```{r, include=FALSE}
+oecd <- ofce::source_data("oecd.R") |> 
+  group_by(year) |> 
+  filter(year>1980) |> 
+  mutate(
+    clabel = countrycode::countrycode(country, "iso3c", "country.name.en"),
+    clabel = ifelse(country=="EUZ", "Eurozone", clabel),
+    us1 = value/value[country=="USA"],
+    relus = value/value[country=="USA"]-1) |>
+  group_by(country) |> 
+  mutate(
+    label = ifelse(year==max(year), country, NA_character_)) |> 
+  ungroup() |> 
+  mutate(
+    lline = glue("<b>{round(value/1000,1)} k$</b> (2021, ppp)/year/capita"),
+    rline = ifelse(country=="USA", "", glue(" ({ifelse(relus>0, '+','')}{round(relus*100)}% USA)")),
+    tooltip = glue("<b>{clabel}</b>
+                   {year}
+                   {lline}{rline}")   ) |> 
+  rename(ppp = value) |> 
+  select(year, country, us1, ppp, label, tooltip) |> 
+  pivot_longer(cols = c(us1, ppp), names_to = "variable", values_to = "value") |> 
+  mutate(label = ifelse(!is.na(label)&variable=="us1"&country!="USA", glue("{label} ({round(100*value)}%)"), label))
+
+ggpib <- function(pays, variable) {
+  if(variable=="ppp") {
+    interactive <- geom_point_interactive(
+      aes(tooltip = tooltip, data_id = year, fill = country),
+      shape = 21, stroke = 0.25, col = "white", hover_nearest = TRUE)
+    ylab <- ylab("GDP, US$2021 ppp per capita")
+    scaley <- scale_y_log10(
+      limits = c(25000, 90000),
+      labels = scales::label_number(scale=1/1000, suffix="k"),
+      guide  = guide_axis_logticks()
+    ) 
+  }
+  if(variable=="us1") { 
+    interactive <- geom_point_interactive(
+      aes(tooltip = tooltip, data_id = year, fill = country),
+      shape = 21, stroke = 0.25, col = "white", hover_nearest = TRUE)
+    ylab <- ylab("GDP, US$2021 ppp per capita, USA = 100%")
+    scaley <- scale_y_log10(
+      labels = scales::label_number(scale = 100, suffix="%"),
+      guide  = guide_axis_logticks()
+    ) 
+  }
+  ggplot(oecd |> filter(country %in% !!pays,
+                        variable %in% !!variable)) +
+    aes(year, value, color = country, group = country) +
+    geom_line() +
+    interactive +
+    scale_color_pays("iso3") +
+    scale_x_continuous(
+      breaks = seq(1980, 2020, by=10),
+      expand = expansion(add = c(2,6))) +
+    ggrepel::geom_text_repel(aes(label=label),
+                             size= 3,
+                             hjust = 0,
+                             nudge_x = 1.5,
+                             max.overlaps = 5,
+                             na.rm=TRUE,
+                             min.segment.length=0.1,
+                             segment.size = 0.1,
+                             xlim = c(2024.5, Inf),
+                             direction = "y") +
+    theme_ofce(
+      marquee=TRUE,
+      panel.spacing = unit(12, 'pt'),
+      axis.text = marquee::element_marquee(size = rel(0.7)),
+      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+      axis.ticks.length.y = unit(-2, 'pt'),
+      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+    xlab(NULL)+
+    ylab+
+    scaley +
+    guides(color="none", fill="none") +
+    ofce::ofce_caption(
+      source = "OECD Economic Outlook 116 (EO), downloaded on 10/05/2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "GDP per head is measured in constant prices (2021), adjusted for purschae power parity (PPP). The variable used is *GDPVD_CAP*. Eurozone is composed of 17 members." )
+}
+
+plots <- list(
+    "USA, EUZ, GB, CHE" = ggpib(c("USA","EUZ", "GBR", "CHE"), "ppp"),
+    "DEU, FRA, ITA, ESP, NLD" = ggpib(c("DEU", "FRA", "ITA", "ESP", "NLD"), "ppp"),
+    "relatif aux USA" = ggpib(c("USA", "GBR", "CHE","EUZ", "DEU", "FRA", "ITA", "ESP", "NLD"), "us1"))
+
+```
+
+```{r, results="asis"}
+#| label: fig-pibcap
+#| fig-cap: Average GDP per capita
+#| fig-asp: 0.7
+
+tabsetize(plots, r=2)
+```
+
+The contrast within the Eurozone is significant, between the Netherlands (a gap of 7% with the USA in 2024) and Spain (a gap of 36%). It is since 2008 that things have come into play (relative tab to the USA on @fig-pibcap), even if for some countries (France and Italy in particular) the gap occurred earlier (early 1990s, partly for demographic reasons).
+
+Since 2008, the Netherlands has lost 12 points of GDP per capita relative to the United States, Germany and France 11 points, Italy and Spain 16 and 10 points respectively (10 points for the Eurozone). It is the simultaneity of this trend that makes it striking, especially as it is not limited to the Eurozone (or the EU), as the trajectories of Switzerland and the UK indicate.
+
+Many explanations have been put forward to explain the downturn since 2008. These include
+
+-   A "Keynesian" explanation, according to which the macroeconomic policies pursued after the 2008 financial crisis and the consequences of the sovereign debt crisis in the Eurozone led to private and public under-investment and oversaving on the continent, leading to an increase in the net external position and a greater relative reduction in public debt in the Eurozone than elsewhere (see @iags2019 and @blot2025). The health crisis of 2020 may have had different consequences, accentuating the divergent trajectories since 2008.
+
+-   A structural explanation lies in the incompleteness of the Eurozone, and in particular financial fragmentation, the absence of an integrated capital market, too great an importance of bank credit in business financing, insufficient competition on the goods and services markets, and a pile of regulations preventing European businesses from investing and innovating and taking their place in technological competition (see @draghi2024).
+
+-   In the same vein, the explanation that the cumbersome nature of the social system and the redistribution it implies are weighing on competitiveness (which does not explain the European current account surplus and generally applies only to France), the allocation of public spending resources and the negative effects on the labour supply leading, for example, the most productive people to leave Europe for other climes.
+
+-   Energy prices. On the one hand, the rise of the EU ETS carbon market (*European Union Emission Trade System* ) and the price of carbon (mainly from the beginning of 2021, when the price of a tonne of CO~2~ rises from less than €20 to more than €70 over the long term) . [@epaulard2024] ), dependence on energy imported from Russia (mainly for Germany), the consequences of which have been massive following Russia's invasion of Ukraine (see @geerolf2022), and the*Inflation Reduction Act* (2022, see @cae2023ira). These factors will play a major role from 2021 onwards, and even more so from 2022 onwards, leading to an energy price 3 times higher in Europe than in the United States [@draghi2024; @epaulard2024] However, the march is sufficiently long for the trend to go back a few years.
+
+-   A technological explanation, according to which the stall is linked to a wave of innovation (digitalisation and network services, robotics, artificial intelligence, massive computing, but also in other sectors such as energy production (wind turbines, solar panels), electric batteries, biotechnologies), the heart of which lies between China and the United States. The combination of a high-performing higher education system, an efficient innovation financing system, a large public-sector order book that completes a market capable of absorbing them, aggressive protectionism on these technologies and technologies that are partly characterised by significant network effects [@dric2025; @dric2022; @dric2016] .
+
+## The income distribution approach
+
+### A few methodological remarks
+
+The explanations given above share a diagnosis based on aggregate, or average, GDP, and for the most part focus on aggregate production or demand. However, income trends are also relevant in assessing an economy's ability to provide an income for its citizens, and can be broken down by income category.
+
+While income is the result of production and the remuneration of factors, other elements modify it, and depending on the income category, the modification can be significant. For the lowest incomes, redistribution (social benefits) net of contributions (direct and indirect taxes) increases primary income from earned income. For the highest incomes, redistribution is generally a net deduction from primary income. However, accumulated savings increase primary income from labour and contribute to income through capital income.
+
+The titanic work accomplished by *World Inequality Database* (WID) researchers, with major contributions from @piketty2018, has enabled us to approach these concepts for many countries, in great depth and over a long period of time. The data provided by the WID even surpasses that available from national or international statistical institutes, and according to the authors themselves (<https://wid.world/methodology/> ), the construction of such comprehensive data requires daring shortcuts. They justify these choices as a precursor to the concept, and want to encourage national statistical institutes to publish better data in order to make available all the information needed to understand changes in income inequality. In this way, the concept of distributed national accounts owes a great deal to WID researchers, and is being imposed on national accounts producers. [@insee2023] .
+
+To provide a counterpoint to aggregate or sectoral trends, we use here the concepts of pre-tax income, i.e. the variable *ptinc* variable in the WID, which is close to primary income, but increased by deferred income (retirement pensions). By treating retirement pensions as income from work, pension contributions are not considered a levy (subsequently redistributed) but a saving, which is a welcome convention for international comparisons, since in many countries retirement savings are not considered compulsory even when they are taxed by the company. Income after taxation and distribution, the variable *diinc* variable in the WID, is a complex construct, close to the notion of adjusted disposable income, i.e. income minus taxes, including indirect taxes, and increased by public spending from which individuals benefit, whether this is individualisable and transferred in money, or collective and charged according to a series of conventions. Complexity, or the use of conventions, is not problematic, but at this stage, the choices made by the WID researchers are not fully discussed. We can only hope that the work undertaken will be continued and disseminated so that we can have as solid a basis for comparison as possible.
+
+As with the aggregate data, we consider changes in value deflated (by the GDP deflator in general, not differentiated by income category), brought back to purchasing power parity (2023 as a reference year). As mentioned in the footnote, these choices mask methodological difficulties that remain unresolved at this stage, and add a few of their own, such as not differentiating price indices by income category when budget coefficients are heterogeneous.
+
+### The richer are falling behind
+
+```{r, include=FALSE}
+dina <- ofce::source_data("wid.R")$dina
+
+labels <- c(p0p50 = "50% less rich",
+            p50p90 = "from 50% less rich to 10% richest",
+            p50p99 = "from 50% less rich to 1% richest",
+            p90p99 = "from 90% richest to 1% richest",
+            p90p100 = "10% richest",
+            p99p100 = "1% richest")
+
+gg1 <- function(pays, variable = "aptincj992", type = "eurppp",
+               percentile=c("p0p50", "p50p90", "p90p100")) {
+  if(type=="eurppp") {
+    interactive <- geom_point_interactive(
+      aes( tooltip = tooltip,
+           data_id = year, fill = country),
+      shape=21, color="white", stroke = 0.1, size=0.75 ,
+      hover_nearest = TRUE)
+    ylab <- ylab("€ 2023, ppp, per capita, per year")
+    
+    scaley <- scale_y_log10(
+      limits = c(7500, 500000),
+      labels = scales::label_number(scale=1/1000, suffix = "k"),
+      breaks = c(20000, 30000, 50000, 100000, 150000, 200000),
+      guide  = guide_axis_logticks()) 
+  }
+  if(type == "us1") {
+    ylab <- ylab("€ 2023, ppp, per capita, per year, USA = 1")
+    scaley <- scale_y_log10(
+      limits = c(.4, 2),
+      guide  = guide_axis_logticks())
+    interactive <- geom_point_interactive(
+      aes( tooltip = tooltip,
+           data_id = year, fill = country),
+      shape=21, color="white", stroke = 0.1, size=0.75 ,
+      hover_nearest = TRUE)
+  }
+  ggplot(dina |> filter(country%in%pays,
+                        variable %in% !!variable,
+                        type %in% !!type,
+                        percentile %in% !!percentile)) +
+    aes(x=year, y=revenu, color = country) +
+    geom_line(linewidth = 0.5)+
+    ggrepel::geom_text_repel(
+      aes(label=label),
+      size= 3 ,
+      hjust =  0.5,
+      nudge_x = 1.5,
+      na.rm=TRUE,
+      max.overlaps = Inf,
+      min.segment.length=0.1,
+      segment.size = 0.1,
+      xlim = c(2023.5, Inf),
+      direction = "y"
+    ) +
+    interactive +
+    facet_wrap(
+      vars(percentile), labeller = as_labeller(labels) )+
+    scaley +
+    scale_x_continuous(
+      breaks = seq(1980, 2020, by = 10),
+      expand = expansion(add = c(2, 6) ) ) +
+    ylab +
+    xlab(NULL) +
+    ofce::scale_color_pays("iso2c") +
+    guides(color = "none", fill = "none") +
+    theme_ofce(
+      panel.spacing = unit(12, 'pt'),
+      axis.text = marquee::element_marquee(size = rel(0.7)),
+      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+      axis.ticks.length.y = unit(-2, 'pt'),
+      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+    ofce::ofce_caption(
+      source = "World Inequality Database (WID), downloaded on 10 may 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "Pre-tax income is from variable *ptinc*, post-tax income is from *diinc*; for age group *992* (adults), share by individual *j*; 2023 constant euro; adjusted for ppp (*xlceupi999*) for the year 2023. Income (pre and post-tax) includes pensions (see https://wid.world/codes-dictionary/).Eurozone (19 member states) is built from centile data from each member state." )
+}
+```
+
+```{r, results="asis"}
+#| label: fig-percentile
+#| fig-cap: Post and pre-tax and redistribution income, different income groups
+#| fig-asp: 0.9
+
+plots <- list(
+  "Adjusted income, post-tax and redistribution" = list(
+    "USA, EUZ, GB, CHE" = gg1(c("US","EUZ","GB", "CH"), "adiincj992"), 
+    "DEU, FRA, ITA, ESP, NLD" = gg1(c("DE","FR","IT","ES","NL"), "adiincj992"),
+    "relative to USA" = gg1(c("US","DE","FR","IT","ES","NL", "GB", "CHE"), "adiincj992", "us1") ),
+    "Primary Income, pre-tax and redistribution" = list(
+    "USA, EUZ, GB,CHE" = gg1(c("US","EUZ","GB", "CH"), "aptincj992"),
+    "DEU, FRA, ITA, ESP, NLD" = gg1(c("DE","FR","IT","ES","NL"), "aptincj992"),
+    "relative to USA" = gg1(c("US", "DE","FR","IT","ES","NL", "GB", "CHE"), "aptincj992", "us1"))
+)
+
+tabsetize2(plots, girafy=TRUE, r=1.5)
+
+```
+
+The @fig-percentile tells a rather different story from the @fig-pibcap, as already noted in 2014 by @timbeau2014 on a less complete version of the WID. For the lowest income categories, the advantage goes to old Europe. There are 4 fairly spectacular findings:
+
+1.  For the Eurozone as a whole, as for the majority of Member States, the per capita income of those below the median in purchasing power parity after redistribution is higher than in the United States (@fig-percentile, in particular the tab relating to the USA). Italy is clearly falling behind, both in relation to the United States and to the Eurozone countries. France is in a rather favourable situation, although the last 10 years have seen a slow increase in these incomes. Inequalities are less marked in the Eurozone than in the USA (@fig-evol) and are fairly stable on average (inequalities have fallen in France and Spain, and are rising in the Netherlands and Italy).
+
+2.  Paradoxically, for half the population, the same applies to primary income (including pensions) (@fig-percentile, Primary income before taxes and redistribution tab). So it is not redistribution (public benefits and spending, net of tax) that enables the least wealthy 50% to enjoy a higher standard of living than the least wealthy 50% in the United States, but income from work, whether immediate or deferred. European pension systems probably play an important role, but beyond that, minimum wage systems and a framework for part-time working also contribute to this characteristic. As @fig-prepost shows, redistribution for the least wealthy 50% has increased from 1980 to the present day, in all countries and fairly uniformly. In this respect, the trajectories of France and the United States are fairly similar. The Netherlands and Switzerland have institutional arrangements that result in particularly high relative pay (instantaneous and deferred) for the poorest.
+
+3.  For the income categories between the bottom 50% and the top 10% (i.e. 40% of the population), the diagnosis is mixed. In terms of primary income, the gap is present for some countries, but it is less glaring than when we look at average GDP. While France's average GDP has fallen by 12 GDP points, the drop is only 4 points for intermediate incomes. While the net contribution to redistribution of this category of the population is almost constant in the Eurozone countries (and close to 0 @fig-prepost), the equivalent category in the United States now benefits from a positive net contribution to redistribution.
+
+4.  For the richest 10%, the gap has widened considerably, whereas it was already significant in 1980, except for Germany (@fig-percentile, relative tab in the USA). If the gap is closing, it is in these income categories. The contribution of redistribution to this gap is not very different in the United States and Europe: the incomes of the richest 10% are taxed more in Europe than in the United States, in a significant proportion, as are those of the richest 1%, and the trends in these taxes are fairly parallel. France and Switzerland are special cases, with very substantial increases in taxation of the richest (especially the 1%).
+
+```{r, include=FALSE}
+dina <- ofce::source_data("wid.R")$dina
+
+evol <- dina |> 
+  filter(type=="eurppp") |> 
+  group_by(variable, year, country) |> 
+  summarize(s10s50 = revenu[percentile=="p90p100"]/revenu[percentile=="p0p50"]) |> 
+  ungroup() |> 
+  mutate(
+    clabel = countrycode::countrycode(country, "iso2c", "country.name.en"),
+    clabel = ifelse(country=="EUZ", "Eurozone", clabel),
+    label = ifelse(year==max(year), country, NA_character_),
+    lline = glue("10% richer average income divided by 50% poorer average income: <b>{round(s10s50,2)}</b>"),
+    tooltip = glue(
+    "<b>{clabel}</b><br>  
+    {floor(year)}<br>
+    {lline}"))
+
+gge <- function(pays, variable = "aptincj992") {
+  ggplot(evol |> filter(variable==!!variable, country %in% !!pays)) +
+  aes(x=year, y=s10s50, color = country) +
+    geom_line(linewidth = 0.5)+
+    ggrepel::geom_text_repel(
+      aes(label=label),
+      size= 3 ,
+      hjust =  0.5,
+      nudge_x = 2,
+      na.rm=TRUE,
+      max.overlaps = Inf,
+      min.segment.length=0.1,
+      segment.size = 0.1,
+      xlim = c(2023.5, Inf),
+      direction = "y"
+    ) +
+    geom_point_interactive(
+      aes( tooltip = tooltip,
+           data_id = year, fill = country),
+      shape=21, color="white", stroke = 0.25,
+      hover_nearest = TRUE) +
+    scale_y_log10(
+      limits = c(2,20),
+      guide  = guide_axis_logticks()) +
+    scale_x_continuous(
+      breaks = seq(1980, 2020, by = 10),
+      expand = expansion(add = c(2, 6) ) ) +
+    ylab("s10/s50 ratio") +
+    xlab(NULL) +
+    ofce::scale_color_pays("iso2c") +
+    guides(color = "none", fill = "none") +
+    theme_ofce(
+      panel.spacing = unit(12, 'pt'),
+      axis.text = marquee::element_marquee(size = rel(0.7)),
+      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+      axis.ticks.length.y = unit(-2, 'pt'),
+      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+    ofce::ofce_caption(
+      source = "World Inequality Database (WID), downloaded on 10 may 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "If income distribution was perfectly even,  the displayed ratio would be 1. The higer the ratio the higer is income inequality. Retirement pensions (and other retirement income) are considered as part of primary income, a better convention than the one used by OECD. Contrary to OECD approach, income inequalities are reduced in some countries (such as France) because pensions are not part of redistribution." )
+  }
+
+eplots <- list(
+  "Adjusted income, post-tax and redistribution" = list(
+    "USA, EUZ, GB, CHE" = gge(c("US","EUZ","GB", "CH"), "adiincj992"), 
+    "DEU, FRA, ITA, ESP, NLD" = gge(c("DE","FR","IT","ES","NL"), "adiincj992") ),
+   "Primary Income, pre-tax and redistribution" = list(
+    "USA, EUZ, GB,CHE" = gge(c("US","EUZ","GB", "CH"), "aptincj992"),
+    "DEU, FRA, ITA, ESP, NLD" = gge(c("DE","FR","IT","ES","NL"), "aptincj992") )
+)
+
+```
+
+```{r, results="asis"}
+#| label: fig-evol
+#| fig-cap: Income inequalities evolution (S10/S50) 
+#| fig-asp: 0.9
+
+tabsetize2(eplots, girafy = TRUE, asp = 0.9)
+```
+
+@fig-compdis summarises the trends over the last 40 years by constructing an overall distribution for the countries under consideration (USA, UK, Switzerland and Eurozone) and calculating the deciles of this distribution. In 1980, the USA was characterised (after redistribution) by a larger share of the richest (the bottom income decile) and a fairly even distribution of the other categories. The European countries, on the other hand, were either less developed (Spain, Italy and the other countries in the euro zone), with a high proportion in the top deciles, or developed (the Netherlands, Switzerland, Germany and France), with a low proportion (or even none at all in some cases) in the top deciles and a higher proportion in the bottom decile than their share of the total population.
+
+```{r, results="asis"}
+#| label: fig-prepost
+#| fig-cap: Adjusted to primary income ratio for different income categories 
+#| fig-asp: 0.9
+
+ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
+  ggplot(dina |> 
+         filter(type=="eurppp", 
+                variable == "aptincj992",
+                country %in% pays,
+                percentile %in% !!percentile)) +
+  aes(x =year, y = prepost, color = country, group=country) +
+  geom_hline(yintercept = 1, linewidth = 0.25, color= "grey") + 
+  geom_line_interactive(aes(
+    data_id = country)) +
+  facet_wrap(vars(percentile), labeller = as_labeller(labels), nrow = 1) +
+  ofce::scale_color_pays("iso2c") +
+    ggrepel::geom_text_repel(
+      aes(label=label),
+      size= 3 ,
+      hjust =  0.5,
+      nudge_x = 1.5,
+      na.rm=TRUE,
+      max.overlaps = Inf,
+      min.segment.length=0.1,
+      segment.size = 0.1,
+      xlim = c(2023.5, Inf),
+      direction = "y"
+    )+
+    scale_x_continuous(
+      breaks = seq(1980, 2020, by = 20),
+      expand = expansion(add = c(2, 10) ) ) +
+    scale_y_log10(
+      limits = c(0.5, 2),
+      breaks = seq(0.5, 2, 0.25),
+      guide  = guide_axis_logticks()) +
+    guides(color = "none", fill = "none") +
+    xlab(NULL)+
+    ylab("diinc/ptinc ratio")+
+    theme_ofce(
+      panel.spacing = unit(12, 'pt'),
+      axis.text = marquee::element_marquee(size = rel(0.7)),
+      axis.text.x = marquee::element_marquee( hjust = 0, margin = margin(t=0)),
+      axis.ticks.length.y = unit(-2, 'pt'),
+      strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
+      strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
+    ofce::ofce_caption(
+      source = "World Inequality Database (WID), downloaded on 10 may 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "Ratio between *diinc* (adjusted income, post tax and redistribution) and *ptinc* (primary income, including pensions) for different income categories. When the ratio is equal to 1, individuals receive as much public spending and social benefits as the pay direct and indirect taxes. When the ratio is more than one, they receive more than what they pay. When the ratio is lower than one, then individuals have a positive net contribution to the redistribution mechanism." )
+}   
+
+plots <- list(
+    "USA, EUZ, GB, CHE" = ggpp(c("US","EUZ","GB", "CH")),
+    "DEU, FRA, ITA, ESP, NLD" = ggpp(c("DE","FR","IT","ES","NL")) )
+
+tabsetize(plots)
+```
+
+In 2023, the situation has changed radically. The thresholds of the deciles have stretched sharply towards high incomes. The bottom of the last decile (€49.8k) in 1980 is in the 7th^th^ decile of the 2023 distribution. The share of the United States in both the top and bottom decile has increased considerably (with a *odd ratio -* the share of the US population in the decile over the share of the US in the total population - of almost 1.5 for the last decile), indicating a clear polarisation of incomes in the United States. Spain - like the rest of the Eurozone - has seen a shift in income distribution to the right, indicating an increase in the overall income scale. Italy, on the other hand, has a higher proportion of its population in the top deciles (almost 10% of its population fell below the overall median between 1980 and 2023). As for the most developed countries in Europe, with the exception of the Netherlands, they are concentrated in the area between the first 3 deciles and the last two deciles.
+
+With the exception of Italy, Europe has proposed a development model that allows the poorest to see their incomes increase significantly before and after redistribution. For middle-income earners, Europe appears to be a more certain and propitious territory than the USA. But the richest people are now increasingly American, Dutch or British. The case of the Netherlands is intriguing: it maintains a high standard of living for the poorest and generous redistribution, but manages to reduce the net contribution of the richest to redistribution. Being the tax haven of the Eurozone undoubtedly helps this miracle (and makes it difficult to generalise to the rest of the Eurozone).
+
+```{r, include=FALSE}
+full_dec <- ofce::source_data("wid.R")$fdec
+
+fnum <- function(x) formatC(x, big.mark =" ", decimal.mark=",", format = "fg", digits=2, width=1)
+
+deciles <- full_dec |> 
+  group_by(decile, year, country3, variable) |> 
+  summarise(
+    revenu_moy = sum(popr*revenu)/sum(popr),
+    seuilp = first(seuilp),
+    seuilm = first(seuilm)
+  ) |> 
+  ungroup() |> 
+  mutate(
+    seuilm = ifelse(seuilm<0, 0, seuilm),
+    label = str_c("[", fnum(seuilm), "->", fnum(seuilp), "]") ) |> 
+  select(variable, decile, year, country3, label, revenu_moy)
+
+pops <- full_dec |>
+  filter(year %in% c(1980, 2023), 
+         variable %in% "aptincj992") |>
+  group_by(year, country3) |>
+  summarize(spopr = sum(popr),
+            .groups = "drop") |>
+  arrange(desc(country3)) 
+
+breaks <- pops |>
+  filter(year=="2023") |> 
+  mutate(cpopr = cumsum(spopr)/10) |> 
+  pull(cpopr, name = country3)
+
+full_dec <- full_dec |>
+  filter(year %in% c(1980,2023)) |> 
+  left_join(deciles, by=c("country3", "decile", "year", "variable")) |> 
+  left_join(pops, by = c("country3", "year")) |> 
+  mutate(
+    clabel = countrycode::countrycode(country3, "iso2c", "country.name.en"),
+    clabel = ifelse(country3=="Autres\nEUZ", "Others EUZ", clabel),
+    tooltip = glue(
+    "<b>Global decile {str_remove(decile, 'd')} year {year}</b>
+     income in {label}
+     <b>{clabel}</b>
+     Global population share: {round(100*spopr)}%
+     Share in the decile: {round(popr*10*100)}%
+     Average income: {fnum(revenu_moy)} 2023€ ppp"))
+    
+gg2 <- map(c(
+  "Adjusted income, post-tax and redistribution" = "adiincj992",
+  "Primary income, pre taxes and redistribution" = "aptincj992"), ~{
+    ggplot(full_dec |> filter(variable==.x)) +
+      aes(x = decile, y = popr, fill = country3)+
+      facet_wrap( vars(year) )+
+      geom_col_interactive(
+        aes(tooltip = tooltip,
+          data_id = country3, fill = country3),
+          alpha=0.7, color = "white", linewidth =0.1, hover_nearest=TRUE) +
+    geom_text(aes(label=if_else(decile=="d1", country3, "")),
+                  position = position_stack(vjust=0.5),
+            size = 2.5, col="white") +
+    scale_y_continuous(
+      breaks = breaks,
+      labels = c("4%", "5%", "", "6%", "7%", "8%", "", "9%", "10%")) +
+    ylab(NULL) +
+    xlab(NULL) +
+    theme_ofce(
+      panel.grid.major.x = element_blank(),
+      panel.grid.major.y = element_line(color = "grey", linewidth = 0.5)  )+
+    scale_color_pays("iso2c") +
+   #scale_fill_manual(values = c(PrettyCols::prettycols("Teals", 6), "orchid3", "royalblue4")) +
+    guides(fill="none") +
+    ofce_caption(
+      source = "World Inequality Database (WID), downloaded on 10 may 2025", ofce = FALSE, author = TRUE,
+      code = "https://github.com/xtimbeau/decrochage",
+      note = "Global income distribution is built from centiles of income from each country/zone and for each income concept b y wieghting centile with population. An intrapolation is computed for millile (1/1000 of population) in order to smooth distribution (see code for details). *y* axis is showing popupation share of each country in 2023, following the ranking of bars."
+    )
+    
+  })
+
+# data <- full_dec |>
+#          group_by(year, variable, decile) |>
+#          arrange(desc(country3)) |> 
+#          mutate(
+#            seuilm = ifelse(seuilm<=10, 10, seuilm),
+#            y = popr/(log(seuilp) - log(seuilm)),
+#            ymax = cumsum(y), 
+#            ymin = lag(ymax, default = 0) ) |> 
+#   ungroup()
+#            
+# ggplot(data ) +
+#   facet_grid(rows = vars(year), cols = vars(variable))+
+#   geom_rect(
+#     aes(xmin = seuilm, xmax = seuilp, ymin = ymin, ymax = ymax, fill=country3 ), col="white") +
+#   scale_x_log10(limits = c(5000, NA))+
+#   coord_flip()
+
+```
+
+```{r, results="asis"}
+#| label: fig-compdis
+#| fig-cap: Global income distribution (EUZ, CHE, UK, USA), 2023 and 1980
+#| fig-asp: 0.9
+
+tabsetize(gg2)
+
+```
+
+### Why the Trump II vote?
+
+These factors make it possible to revisit the analysis often made of a particularly strong performance by the United States. While this performance is indisputable, it has not at all benefited the poorest. This explains the feeling that the economic situation has deteriorated considerably under the Biden mandate and partly explains the Trump vote. A closer look at the @fig-percentile presented on the @fig-zoom shows fairly clear growth in the income of the 50% least wealthy from 2018 to 2020, interrupted thereafter by the COVID and the rise in energy prices.
+
+```{r}
+#| label: fig-zoom
+#| fig-cap: Zoom on 2008-2023 period, USA
+#| fig-asp: 0.6
+
+g50 <- gg1(c("US"), "adiincj992", percentile=c("p0p50")) + 
+  scale_x_continuous(
+    limits=c(2008, NA), breaks = seq(2008, 2020, by = 4),
+    expand = expansion(add = c(2, 6) ) ) +
+  scale_y_log10(
+        limits = c(15000, 30000) ,
+        labels = scales::label_number(scale=1/1000, suffix = "k"),
+        guide  = guide_axis_logticks()) +
+  facet_wrap(
+      vars(percentile),
+      labeller = as_labeller(labels),
+      scale = "free_y") -
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5) -
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=15000, fill="pink", alpha=0.5) -
+  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5)+
+  annotate("text", x=2013, y=30000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2019, y=30000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2023, y=30000, label="Biden", hjust = 0.5, vjust=1, size = 2) +
+  ofce_caption(
+    source = NULL, ofce = FALSE, author = TRUE,
+    code = NULL)
+
+g5090 <- gg1(c("US"), "adiincj992", percentile=c("p50p90")) + 
+  scale_x_continuous(
+    limits=c(2008, NA), breaks = seq(2008, 2020, by = 4),
+    expand = expansion(add = c(2, 6) ) ) +
+  scale_y_log10(
+        limits = c(50000, 70000) ,
+        labels = scales::label_number(scale=1/1000, suffix = "k"),
+        guide  = guide_axis_logticks()) +
+  facet_wrap(
+      vars(percentile),
+      labeller = as_labeller(labels),
+      scale = "free_y") -
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5) -
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=50000, fill="pink", alpha=0.5) -
+  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5)+
+  annotate("text", x=2013, y=70000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2019, y=70000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2023, y=70000, label="Biden", hjust = 0.5, vjust=1, size = 2)+
+  ylab(NULL) +
+  ofce_caption(
+    source = NULL, ofce = FALSE, author = TRUE,
+    code = NULL)
+
+g90100 <- gg1(c("US"), "adiincj992", percentile=c("p90p100")) + 
+  scale_x_continuous(
+    limits=c(2008, NA), breaks = seq(2008, 2020, by = 4),
+    expand = expansion(add = c(2, 6) ) ) +
+  scale_y_log10(
+        limits = c(175000, 250000) ,
+        labels = scales::label_number(scale=1/1000, suffix = "k"),
+        guide  = guide_axis_logticks()) +
+  facet_wrap(
+      vars(percentile),
+      labeller = as_labeller(labels),
+      scale = "free_y") -
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) -
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=175000, fill="pink", alpha=0.5) -
+  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) +
+  annotate("text", x=2013, y=250000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2019, y=250000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2023, y=250000, label="Biden", hjust = 0.5, vjust=1, size = 2)+
+  ylab(NULL) +
+  ofce_caption(
+    source = NULL, ofce = FALSE, author = TRUE,
+    code = NULL)
+
+ggg <- g50 + g5090 + g90100 +
+  plot_annotation(caption="*Note* : Income scales (*y* axis) differ for each panel. Annual values are placed in the middle of the year.   \n*Source* : World Inequality Database (WID), doanwloaded on 10 mai 2025",
+                  theme = theme_ofce())
+
+girafy(ggg)
+```
+
+This phenomenon is less clear-cut for the next 40%, but since 2008, income growth in the category between the 50% least wealthy and the 10% richest has been rather weak compared with previous periods. The same slowdown can be seen for the richest 10%, but it is less marked, leading to an increase in inequality between 2020 and 2023 (the ratio of the average income of the richest 10% to the average income of the least rich 50% rises from 8.49 to 9.05 in the United States, compared with 3.43 and 3.59 in France, @fig-evol), whereas it had fallen between 2016 and 2020 (from 9.90 to 8.49). Since 2008, this ratio has been higher and has increased in the United States (8.91 in 2008), whereas it has fallen in Germany (from 5.21 to 4.97) and France (from 4.22 to 3.59). From the point of view of a median American, the recent period is not at all favourable, and the economic performance envied on this side of the Atlantic is not shared by the income distribution.
+
+It should also be noted that these trends can pollute sectoral analyses. As some authors showed a long time ago [@godechot2012] the rise in high salaries (particularly in finance) and the assumption that marginal productivity is the same as individual wages wrongly attribute productivity gains to the sectors capturing the rents, whereas the gains may come from other sectors (industry, services, intellectual production). Sectoral analyses therefore suffer from a bias that can lead to erroneous recommendations.
