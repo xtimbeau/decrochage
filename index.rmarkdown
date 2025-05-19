@@ -140,7 +140,7 @@ De nombreuses explications ont été avancées pour expliquer le décrochage dep
 
 -   Une explication par le prix de l'énergie [@blot2025]. D'un côté la montée en puissance du marché carbone EU ETS (*European Union* *Emission Trade System*) et du prix du carbone (principalement à partir du début de 2021 où le prix de la tonne de CO~2~ passe de moins de 20€ à plus de 70€ durablement [@epaulard2024]), la dépendance à l'énergie importée de Russie (principalement pour l'Allemagne) dont les conséquences ont été massives après l'invasion de l'Ukraine par la Russie (voir @geerolf2022) ou encore l'*Inflation Reduction Act* (2022, voir @cae2023ira). Ces facteurs jouent principalement à partir de 2021 et plus encore à partir de 2022 pour conduire à un prix de l'énergie 3 fois plus élevé en Europe qu'aux Etats-Unis [@draghi2024, @epaulard2024], mais la marche est suffisamment importante pour que l'évolution remonte à quelques années auparavant.
 
--   Une explication technologique, selon laquelle le décrochage est lié à une vague d'innovation (digitalisation et services réseaux, robotique, intelligence artificielle, calcul massif mais aussi dans d'autres secteurs comme la production d'énergie (éolienne, panneaux solaires), les batteries électriques, biotechnologies) dont le coeur se situe entre la Chine et les Etats-Unis. La combinaison d'un système éducatif supérieur très performant, d'un système de financement de l'innovation efficace, d'une commande publique importante qui complète un marché à même de les absorber, d'un protectionnisme agressif sur ces technologies et de technologies partiellement caractérisées par des effets de réseau important [@dric2025, @dric2022, @dric2016].
+-   Une explication technologique, selon laquelle le décrochage est lié à une vague d'innovation (digitalisation et services réseaux, robotique, intelligence artificielle, calcul massif mais aussi dans d'autres secteurs comme la production d'énergie (éolienne, panneaux solaires), les batteries électriques, biotechnologies) dont le coeur se situe entre la Chine et les Etats-Unis. La combinaison d'un système éducatif supérieur très performant, d'un système de financement de l'innovation efficace, d'une commande publique importante qui complète un marché à même de les absorber, d'un protectionnisme agressif sur ces technologies et de technologies partiellement caractérisées par des effets de réseau important [@dric2025; @dric2022; @dric2016].
 
 ## L'angle de la distribution des revenus
 
@@ -280,10 +280,12 @@ evol <- dina |>
     clabel = countrycode::countrycode(country, "iso2c", "country.name.fr"),
     clabel = ifelse(country=="EUZ", "Zone euro", clabel),
     label = ifelse(year==max(year), country, NA_character_),
-    lline = glue("<b>Revenu moyen des 10% les plus riches sur le revenu moyen des 50% les plus pauvres : {round(s10s50,2)}"),
-    tooltip = glue("<b>{clabel}</b>
-                   {year}
-                   {lline}"))
+    lline = glue("Revenu moyen des 10% les plus riches sur le revenu moyen des 50% les plus pauvres : <b>{round(s10s50,2)}</b>"),
+    tooltip = glue(
+    "<b>{clabel}</b><br>  
+    {floor(year)}<br>
+    {lline}"))
+
 gge <- function(pays, variable = "aptincj992") {
   ggplot(evol |> filter(variable==!!variable, country %in% !!pays)) +
   aes(x=year, y=s10s50, color = country) +
@@ -292,7 +294,7 @@ gge <- function(pays, variable = "aptincj992") {
       aes(label=label),
       size= 3 ,
       hjust =  0.5,
-      nudge_x = 1.5,
+      nudge_x = 2,
       na.rm=TRUE,
       max.overlaps = Inf,
       min.segment.length=0.1,
@@ -605,3 +607,4 @@ girafy(ggg)
 Ce phénomène est moins net pour les 40% suivants, mais depuis 2008, la croissance du revenu de la catégorie entre les 50% les moins riches aux 10% les plus riches a été plutôt faible comparée aux périodes précédentes. Le même ralentissement s'observe pour les 10% les plus riches, mais il est moins net, ce qui conduit à un accroissement des inégalités entre 2020 et 2023 (le ratio revenu moyen des 10% les plus riches au revenu moyen des 50% les moins riches passe de 8,49 à 9,05 aux Etats-Unis, contre 3,43 et 3,59 en France, @fig-evol) alors qu'il avait baissé de 2016 à 2020 (de 9,90 à 8,49). Depuis 2008, ce ratio est plus élevé et a augmenté aux Etats-Unis (8,91 en 2008), alors qu'il a diminué en Allemagne (de 5,21 à 4,97) ou en France (de 4,22 à 3,59). Du point de vue d'un Américain médian, la période récente n’est pas du tout favorable et la performance économique enviée de ce côté-ci de l'Atlantique n'est pas partagée le ling de la distribution des revenus.
 
 Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps [@godechot2012], la hausse des hautes rémunérations (en particulier dans la finance) et l'hypothèse assimilant productivité marginale et salaire individuel imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées.
+
