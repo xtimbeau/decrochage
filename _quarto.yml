@@ -1,20 +1,23 @@
 project:
-  type: manuscript
+  type: website
   title: "decrochage"
 
 editor: visual
 
-manuscript:
+website:
   code-links:
     - text: Github
       icon: github
-      href: https::github.com/xtimbeau/decrochage
+      href: https://github.com/xtimbeau/decrochage
     - text: Données OCDE
       icon: file-code
       href: oecd.r
     - text: Données WID
       icon: file-code
       href: wid.r
+    - text: English version
+      icon: file-code
+      href: index.en.html
 
 
 format:
