@@ -37,6 +37,7 @@ library(readxl, quietly = TRUE)
 library(tictoc)
 
 options(
+  ofce.marquee = TRUE,
   ofce.base_size = 12,
   ofce.background_color = "transparent",
   ofce.caption.ofce = FALSE,
@@ -44,7 +45,7 @@ options(
   ofce.caption.srcplus = "pr\u00e9vision OFCE avril 2025",
   ofce.caption.ofce = TRUE,
   ofce.caption.wrap = 0,
-  sourcoise.src_in = "project",
+  sourcoise.src_in = "file",
   sourcoise.init_fn = ofce::init_qmd)
 
 margin_download <- function(data, output_name = "donnees", label = "donn\u00e9es") {
@@ -523,26 +524,26 @@ tabsetize <- function(list, facety = TRUE, cap = TRUE, girafy = TRUE, asp = NULL
     }
   } else {
 
-      ids <- 1:length(list) |> set_names(names(list))
-      label <- knitr::opts_current$get()$label
+    ids <- 1:length(list) |> set_names(names(list))
+    label <- knitr::opts_current$get()$label
 
-      purrr::iwalk(list, ~{
-        id <- ids[[.y]]
-        if(!is.null(asp))
-          asp_txt <- glue(", fig.asp={asp}")
-        else
-          asp_txt <- ""
-        lbl <- glue("'{label} {id}'")
-        if(is(.x, "ggplot")) {
+    purrr::iwalk(list, ~{
+      id <- ids[[.y]]
+      if(!is.null(asp))
+        asp_txt <- glue(", fig.asp={asp}")
+      else
+        asp_txt <- ""
+      lbl <- glue("'{label} {id}'")
+      if(is(.x, "ggplot")) {
         plot <- .x
         rendu <- knitr::knit(
           text = str_c("```{r ", lbl, asp_txt," }\nplot \n```"),
           quiet=TRUE)
-        }
-        cat(rendu, sep="\n")
-      })
-    }
+      }
+      cat(rendu, sep="\n")
+    })
   }
+}
 
 tabsetize2 <- function(list, facety = TRUE, cap = TRUE, girafy = FALSE, asp=NULL, r=1.5) {
 
@@ -570,28 +571,50 @@ tabsetize2 <- function(list, facety = TRUE, cap = TRUE, girafy = FALSE, asp=NULL
       cat(":::::\n\n")
     }
   } else {
-    if(facety)
-      patchwork::wrap_plots(list[[1]], ncol = 2) & theme_ofce(base.size=6)
-    else
-      list[[1]] |> print()
+    purrr::iwalk(list, ~{
+      tabsetize(.x, facety=FALSE, cap = FALSE, girafy = girafy, asp = asp, r = r)
+      cat("\n\n")
+    })
   }
 }
 
-download_margin <- function(data, output_name = "donnees", label = "donn\u00e9es", margin = TRUE) {
+download_margin <- function(data, output_name = "donnees", label = "donn\u00e9es", link = FALSE) {
 
   if(knitr::is_html_output()) {
-    if(lobstr::obj_size(data)> 1e+5)
-      cli::cli_alert("la taille de l'objet est sup\u00e9rieure à 100kB")
+
     fn <- tolower(output_name)
-    link <- stringr::str_c("dnwld/", output_name, ".csv.gz")
-    vroom::vroom_write(data, link, delim = ";")
 
-    dwn <- downloadthis::download_link(
-      link,
-      icon = "fa fa-download",
-      class = "dbtn",
-      button_label  = label)
+    if(link) {
+      if(!fs::dir_exists("dnwld"))
+        dir.create("dnwld")
+      link <- stringr::str_c("dnwld/", output_name, ".csv.gz")
+      vroom::vroom_write(data, link, delim = ";")
 
+      dwn <- downloadthis::download_link(
+        link,
+        icon = "fa fa-download",
+        class = "dbtn",
+        button_type = "default",
+        has_icon = TRUE,
+        button_label  = label)
+    }
+
+    if(!link) {
+      if(lobstr::obj_size(data)> 1e+5)
+        cli::cli_alert("la taille de l'objet est sup\u00e9rieure à 100kB")
+      dwn <- downloadthis::download_this(
+        data,
+        icon = "fa fa-download",
+        class = "dbtn",
+        button_label  = label,
+        output_name = fn)
+    }
+
+    rendu <- knitr::knit(
+      text=str_c("```{r ", round(runif(1)*100000) ,", include=FALSE}\nfontawesome::fa_html_dependency()\n```"),
+      quiet=TRUE)
+    cat(rendu)
+    cat("\n\n")
     cat(str_c("::: {.column-margin} \n" ))
     dwn |> htmltools::tagList() |> print()
     cat("\n")
@@ -654,3 +677,14 @@ cols_hide_pdf <- function(tbl, col) {
 }
 
 prev <- source_data("fiches/data_pays/data_vars.R")
+
+`-.gg` <- function(plot, layer) {
+  if (missing(layer)) {
+    stop("Cannot use `-.gg()` with a single argument. Did you accidentally put - on a new line?")
+  }
+  if (!is.ggplot(plot)) {
+    stop('Need a plot on the left side')
+  }
+  plot$layers = c(layer, plot$layers)
+  plot
+}
