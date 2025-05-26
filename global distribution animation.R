@@ -1,6 +1,7 @@
 library(tidyverse)
 library(gganimate)
-
+library(showtext)
+showtext_auto()
 full_dec <- ofce::source_data("wid.R")$fdec |>
   mutate(
     country4 = case_when(
@@ -38,11 +39,20 @@ breaks <- pops |>
 full_dec <- full_dec |>
   left_join(deciles, by=c("country3", "decile", "year", "variable")) |>
   left_join(pops, by = c("country3", "year")) |>
-  mutate(year = as.integer(year))
+  mutate(year = as.integer(year)) |>
+  arrange(year, variable, country3, decile)
 
-gga <- ggplot(full_dec) +
+ffd <- full_dec |>
+  mutate(year = factor(year)) |>
+  group_by(country4, year, variable, decile) |>
+  summarize(popr = sum(popr)) |>
+  group_by(year) |>
+  mutate(yl = ifelse(row_number()==1, as.character(year), NA_character_))
+
+
+gga <- ggplot(ffd) +
   aes(x = decile, y = popr, fill = country4)+
-  facet_wrap( vars(variable))+
+  facet_wrap( vars(variable), labeller = as_labeller(c(adiincj992 = "Après redistribution",aptincj992 = "Avant redistribution")))+
   geom_col(
     alpha=0.7, color = "white", linewidth =0.1) +
   geom_text(aes(label=if_else(decile=="d1", country4, "")),
@@ -57,16 +67,43 @@ gga <- ggplot(full_dec) +
   #   marquee=FALSE,
   #   panel.grid.major.x = element_blank(),
   #   panel.grid.major.y = element_line(color = "grey", linewidth = 0.5)  )+
-  PrettyCols::scale_fill_pretty_d("Joyful") +
+  PrettyCols::scale_fill_pretty_d("Summer") +
   #scale_fill_manual(values = c(PrettyCols::prettycols("Teals", 6), "orchid3", "royalblue4")) +
   guides(fill="none") +
+  geom_text(aes(x=0, y=.11, label=year))+
   theme_void() +
+  theme(
+    plot.subtitle = element_text(margin=margin()),
+    strip.text = element_text(margin=margin()),
+    plot.margin = margin(),
+    panel.spacing = unit(3, "pt")) +
   labs(
-    caption = "World Inequality Database (WID), code @github.com/xtimbeau/decrochage",
-    title = 'Year: {frame_time}') +
-  transition_states(year, state_length = 2, wrap = FALSE) +
+    caption = "World Inequality Database (WID), code @github.com/xtimbeau/decrochage") +
+  transition_states(year) +
   enter_fade() +
   exit_fade() +
   ease_aes('linear')
 
-animate(gga, height = 4, width = 4, units = "cm", res = 400)
+animate(gga, height = 4, width = 6, device="ragg_png", units = "cm", res = 400, rewind=FALSE, end_pause=3, start_pause=3, fps=5)
+
+
+full_dec |>
+  group_by(variable, country3, year) |>
+  summarize(d5 = sum(popr[decile%in%c("d1", "d2", "d3")])) |>
+  ungroup() |>
+  left_join(pops, by=c("year", "country3")) |>
+  ggplot() +
+  facet_wrap(vars(country3))+
+  scale_y_log10()+
+  geom_line(aes(x=year, y=d5/spopr*10, color = variable))+
+  ofce::theme_ofce()
+
+full_dec |>
+  group_by(variable, country3, year) |>
+  summarize(d5 = sum(popr[decile%in%c("d9", "d10")])) |>
+  ungroup() |>
+  left_join(pops, by=c("year", "country3")) |>
+  ggplot() +
+  facet_wrap(vars(country3))+
+  scale_y_log10()+
+  geom_line(aes(x=year, y=d5/spopr*10, color = variable))
