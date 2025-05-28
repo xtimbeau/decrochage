@@ -88,14 +88,15 @@ animate(gga, height = 4, width = 6, device="ragg_png", units = "cm", res = 400, 
 
 
 full_dec |>
+  filter(year%in%c("1980", "2023")) |>
   group_by(variable, country3, year) |>
-  summarize(d5 = sum(popr[decile%in%c("d1", "d2", "d3")])) |>
+  summarize(d5 = sum(popr[decile%in%c("d1", "d2")])) |>
   ungroup() |>
   left_join(pops, by=c("year", "country3")) |>
   ggplot() +
   facet_wrap(vars(country3))+
   scale_y_log10()+
-  geom_line(aes(x=year, y=d5/spopr*10, color = variable))+
+  geom_point(aes(x=factor(year), y=d5/spopr*10, color = variable))+
   ofce::theme_ofce()
 
 full_dec |>
