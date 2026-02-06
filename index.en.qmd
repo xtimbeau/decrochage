@@ -567,12 +567,12 @@ g50 <- gg1(c("US"), "adiincj992", percentile=c("p0p50")) +
   facet_wrap(
       vars(percentile),
       labeller = as_labeller(labels),
-      scale = "free_y") -
-  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5) -
-  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=15000, fill="pink", alpha=0.5) -
-  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5)+
-  annotate("text", x=2013, y=30000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
-  annotate("text", x=2019, y=30000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
+      scale = "free_y") +
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5) +
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=15000, fill="pink", alpha=0.5) +
+  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5) +
+  annotate("text", x=2013, y=30000, label="Obama", hjust = 0.5, vjust=1, size = 2) +
+  annotate("text", x=2019, y=30000, label="Trump I", hjust = 0.5, vjust=1, size = 2) +
   annotate("text", x=2023, y=30000, label="Biden", hjust = 0.5, vjust=1, size = 2) +
   ofce_caption(
     source = NULL, ofce = FALSE, author = TRUE,
@@ -589,13 +589,13 @@ g5090 <- gg1(c("US"), "adiincj992", percentile=c("p50p90")) +
   facet_wrap(
       vars(percentile),
       labeller = as_labeller(labels),
-      scale = "free_y") -
-  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5) -
-  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=50000, fill="pink", alpha=0.5) -
-  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5)+
-  annotate("text", x=2013, y=70000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
-  annotate("text", x=2019, y=70000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
-  annotate("text", x=2023, y=70000, label="Biden", hjust = 0.5, vjust=1, size = 2)+
+      scale = "free_y") +
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5) +
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=50000, fill="pink", alpha=0.5) +
+  annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5) +
+  annotate("text", x=2013, y=70000, label="Obama", hjust = 0.5, vjust=1, size = 2) +
+  annotate("text", x=2019, y=70000, label="Trump I", hjust = 0.5, vjust=1, size = 2) +
+  annotate("text", x=2023, y=70000, label="Biden", hjust = 0.5, vjust=1, size = 2) +
   ylab(NULL) +
   ofce_caption(
     source = NULL, ofce = FALSE, author = TRUE,
@@ -612,13 +612,13 @@ g90100 <- gg1(c("US"), "adiincj992", percentile=c("p90p100")) +
   facet_wrap(
       vars(percentile),
       labeller = as_labeller(labels),
-      scale = "free_y") -
-  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) -
-  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=175000, fill="pink", alpha=0.5) -
+      scale = "free_y") +
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) +
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=175000, fill="pink", alpha=0.5) +
   annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) +
-  annotate("text", x=2013, y=250000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
-  annotate("text", x=2019, y=250000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
-  annotate("text", x=2023, y=250000, label="Biden", hjust = 0.5, vjust=1, size = 2)+
+  annotate("text", x=2013, y=250000, label="Obama", hjust = 0.5, vjust=1, size = 2) +
+  annotate("text", x=2019, y=250000, label="Trump I", hjust = 0.5, vjust=1, size = 2) +
+  annotate("text", x=2023, y=250000, label="Biden", hjust = 0.5, vjust=1, size = 2) +
   ylab(NULL) +
   ofce_caption(
     source = NULL, ofce = FALSE, author = TRUE,
