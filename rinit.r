@@ -676,7 +676,6 @@ cols_hide_pdf <- function(tbl, col) {
   return(tbl)
 }
 
-prev <- source_data("fiches/data_pays/data_vars.R")
 
 `-.gg` <- function(plot, layer) {
   if (missing(layer)) {

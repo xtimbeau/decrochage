@@ -49,6 +49,10 @@ oecd <- ofce::source_data("oecd.R") |>
   pivot_longer(cols = c(us1, ppp), names_to = "variable", values_to = "value") |>
   mutate(label = ifelse(!is.na(label)&variable=="us1"&country!="USA", glue("{label} ({round(100*value)}%)"), label))
 
+date_oecd <- sourcoise::sourcoise_meta("oecd.r")$data_date |> 
+  as.Date() |> 
+  lubridate::stamp_date("téléchargé le 10/4/2025", locale = "fr_FR")()
+
 ggpib <- function(pays, variable) {
   if(variable=="ppp") {
     interactive <- geom_point_interactive(
@@ -102,7 +106,7 @@ ggpib <- function(pays, variable) {
     scaley +
     guides(color="none", fill="none") +
     ofce::ofce_caption(
-      source = "OECD Economic Outlook 116 (EO), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      source = "OECD Economic Outlook 118 (EO), {date_oecd}", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
       note = "Le PIB par tête est en dollar constant (2021), en parité de pouvoir d'achat (*GDPVD_CAP*) ; la zone euro est à 17 membres." )
 }
@@ -172,6 +176,9 @@ Comme pour les données agrégées, nous considérons les évolutions en valeur 
 
 ```{r, include=FALSE}
 dina <- ofce::source_data("wid.R")$dina
+date_wid <- sourcoise::sourcoise_meta("wid.r")$data_date |> 
+  as.Date() |> 
+  lubridate::stamp_date("téléchargée le 10/4/2025", locale = "fr_FR")()
 
 labels <- c(p0p50 = "50% les moins riches",
             p50p90 = "des 50% les moins riches aux 10% les plus riches",
@@ -244,7 +251,7 @@ gg1 <- function(pays, variable = "aptincj992", type = "eurppp",
       strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
       strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
     ofce::ofce_caption(
-      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      source = "World Inequality Database (WID), {date_wid}", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
       note = "Le revenu pré-taxation est la variable *ptinc*, le revenu post taxation est *diinc* ; pour le groupe d'âge *992* ; le partage *j* ; en euro 2023 constant, converti en parité pouvoir d'achat (*xlceupi999*) pour l'année 2023. Le revenu (pré et post) inclu les retraites (voir https://wid.world/codes-dictionary/). La zone euro (à 19 pays) est reconstituée à partir des données en centiles de chaque Etat membre" )
 }
@@ -343,7 +350,7 @@ gge <- function(pays, variable = "aptincj992") {
       strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
       strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
     ofce::ofce_caption(
-      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      source = "World Inequality Database (WID), {date_wid}", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
       note = "Si la distribution des revenus était parfaitement égale, le ratio serait égal à 1. Plus le ratio est grand plus les inégalités sont marquées. Les pensions de retraite sont traitées comme revenu primaire ce qui est une meilleure convention que celle pratiquée par l'OCDE. Cette convention réduit les inégalités primaires généralement retenues pour la France, qui découle de la prise en compte du système de retraite comme une redistribution." )
   }
@@ -422,7 +429,7 @@ ggpp <- function(pays, percentile=c("p0p50", "p50p90", "p90p99", "p99p100")) {
       strip.text.x = marquee::element_marquee(size=rel(0.7), hjust = 0, width = 0.9),
       strip.text.y = marquee::element_marquee(size=rel(0.7), hjust = 0)) +
     ofce::ofce_caption(
-      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      source = "World Inequality Database (WID), {date_wid}", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
       note = "Ratio entre *diinc* (revenu disponible ajusté, après taxation et redistribution) et *ptinc* (revenu primaire incluant les salaires différés) pour différentes catégories de revenus. Lorsque le ratio est égal à 1, les individus reçoivent autant de prestations et de dépenses publiques qu'ils payent d'impôts (directs et indirects). Lorsque le ratio est supérieur à 1, ils reçoivent plus qu'ils ne payent. Inversement, lorsque le ratio est inférieur à 1, ils ont une contribution nette positive à la resdistribution." )
 }
@@ -439,8 +446,7 @@ En 2023, la situation a radicalement changé. Les seuils des déciles se sont é
 L'Europe, à l'exception de l'Italie a proposé un modèle de développement permettant aux plus pauvres de voir significativement augmenter leurs revenus avant et après redistribution. Pour les revenus intermédiaires, l'Europe apparaît comme un territoire plus certain et propice que les USA. Mais les plus riches sont désormais de plus en plus américains, néerlandais ou britanniques. Le cas des Pays-Bas est intriguant : ils maintiennent un haut niveau de vie des plus pauvres, une redistribution généreuse, mais parviennent à alléger la contribution nette des plus riches à la redistribution. Etre le paradis fiscal de la zone euro et bénéficier d'un important excédent commercial liè à sa position de point d'entrée des flux commerciaux en Europe aide sans doute ce miracle (et le rend difficilement généralisable au reste de la zone euro).
 
 ```{r, include=FALSE}
-full_dec <- ofce::source_data("wid.R")$fdec
-
+full_dec <- ofce::source_data("wid.r")$fdec
 fnum <- function(x) formatC(x, big.mark =" ", decimal.mark=",", format = "fg", digits=2, width=1)
 
 deciles <- full_dec |>
@@ -457,7 +463,7 @@ deciles <- full_dec |>
   select(variable, decile, year, country3, label, revenu_moy)
 
 pops <- full_dec |>
-  filter(year %in% c(1980, 2023),
+  filter(year %in% c(1980, 2024),
          variable %in% "aptincj992") |>
   group_by(year, country3) |>
   summarize(spopr = sum(popr),
@@ -465,12 +471,12 @@ pops <- full_dec |>
   arrange(desc(country3))
 
 breaks <- pops |>
-  filter(year=="2023") |>
+  filter(year=="2024") |>
   mutate(cpopr = cumsum(spopr)/10) |>
   pull(cpopr, name = country3)
 
 full_dec <- full_dec |>
-  filter(year %in% c(1980,2023)) |>
+  filter(year %in% c(1980,2024)) |>
   left_join(deciles, by=c("country3", "decile", "year", "variable")) |>
   left_join(pops, by = c("country3", "year")) |>
   mutate(
@@ -482,7 +488,7 @@ full_dec <- full_dec |>
      <b>{clabel}</b>
      Part dans la population globale: {round(100*spopr)}%
      Part dans le decile: {round(popr*10*100)}%
-     Revenu moyen: {fnum(revenu_moy)} euros 2023 ppp"))
+     Revenu moyen: {fnum(revenu_moy)} euros 2024 ppp"))
 
 gg2 <- map(c(
   "Revenu ajusté, après taxes et redistribution" = "adiincj992",
@@ -509,9 +515,9 @@ gg2 <- map(c(
    #scale_fill_manual(values = c(PrettyCols::prettycols("Teals", 6), "orchid3", "royalblue4")) +
     guides(fill="none") +
     ofce_caption(
-      source = "World Inequality Database (WID), téléchargée le 10 mai 2025", ofce = FALSE, author = TRUE,
+      source = "World Inequality Database (WID), {date_wid}", ofce = FALSE, author = TRUE,
       code = "https://github.com/xtimbeau/decrochage",
-      note = "La distribution globale est construite à partir des centiles de distribution de chaque pays/zones et pour le revenu ajusté (*diinc*) et primaire (*ptinc*) en pondérant par la population du centile. Une intrapolation est faite au millile pour lisser les répartitions entre déciles (voir le code). L'axe des *y* représente les parts des populations des pays dans la population totale en 2023 dans l'ordre d'affichage des pays."
+      note = "La distribution globale est construite à partir des centiles de distribution de chaque pays/zones et pour le revenu ajusté (*diinc*) et primaire (*ptinc*) en pondérant par la population du centile. Une intrapolation est faite au millile pour lisser les répartitions entre déciles (voir le code). L'axe des *y* représente les parts des populations des pays dans la population totale en 2024 dans l'ordre d'affichage des pays."
     )
 
   })
@@ -552,7 +558,7 @@ download_margin(full_dec |> select(year, country3, decile, variable, popr, reven
 
 ### Pourquoi le vote Trump II ?
 
-Ces éléments permettent de revenir sur l'analyse souvent faite d'une performance des Etats-Unis particulièrement forte. Si cette performance est incontestable, elle n'a pas du tout profité aux plus pauvres. Ceci peut expliquer le sentiment d'une situation économique très dégradé sous le mandat Biden (même si les évolutions ne sont pas le fait directement des présidents et de leurs politiques mais résultent d'évènements externes) et en partie le vote Trump, sans pour autant négliger l'importante littérature sur le sujet du vote aux Etats-Unis – et les nombreux arguments qui y sont déployés, comme les excès de la mondialisation, la radicalisation des opinions politiques autour du climat, la révolution conservatrice au *wokisme* et bien d'autres. Pourtant, un zoom de la @fig-percentile présenté sur la @fig-zoom indique une croissance du revenu des 50% les moins riches assez nette de 2018 à 2020, interrompue ensuite, avec le COVID et la hausse des prix de l'énergie, un résultat proche de celui de @frbsf2025 à partir de sources différentes.
+Ces éléments permettent de revenir sur l'analyse souvent faite d'une performance des Etats-Unis particulièrement forte. Si cette performance est incontestable, elle n'a pas du tout profité aux plus pauvres. Ceci peut expliquer le sentiment d'une situation économique très dégradé sous le mandat Biden (même si les évolutions ne sont pas le fait directement des présidents et de leurs politiques mais résultent d'évènements externes) et en partie le vote Trump, sans pour autant négliger l'importante littérature sur le sujet du vote aux Etats-Unis – et les nombreux arguments qui y sont déployés, comme les excès de la mondialisation, la radicalisation des opinions politiques autour du climat, la révolution conservatrice au *wokisme* et bien d'autres. Pourtant, un zoom de la @fig-percentile présenté sur la @fig-zoom indique une croissance du revenu des 50% les moins riches assez nette de 2018 à 2020, interrompue ensuite, avec le COVID et la hausse des prix de l'énergie.
 
 ```{r}
 #| label: fig-zoom
@@ -570,9 +576,9 @@ g50 <- gg1(c("US"), "adiincj992", percentile=c("p0p50")) +
   facet_wrap(
       vars(percentile),
       labeller = as_labeller(labels),
-      scale = "free_y") -
-  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5) -
-  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=15000, fill="pink", alpha=0.5) -
+      scale = "free_y") +
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5) +
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=15000, fill="pink", alpha=0.5) +
   annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=15000, fill="lightblue", alpha=0.5)+
   annotate("text", x=2013, y=30000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
   annotate("text", x=2019, y=30000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
@@ -592,9 +598,9 @@ g5090 <- gg1(c("US"), "adiincj992", percentile=c("p50p90")) +
   facet_wrap(
       vars(percentile),
       labeller = as_labeller(labels),
-      scale = "free_y") -
-  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5) -
-  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=50000, fill="pink", alpha=0.5) -
+      scale = "free_y") +
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5) +
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=50000, fill="pink", alpha=0.5) +
   annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=50000, fill="lightblue", alpha=0.5)+
   annotate("text", x=2013, y=70000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
   annotate("text", x=2019, y=70000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
@@ -615,9 +621,9 @@ g90100 <- gg1(c("US"), "adiincj992", percentile=c("p90p100")) +
   facet_wrap(
       vars(percentile),
       labeller = as_labeller(labels),
-      scale = "free_y") -
-  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) -
-  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=175000, fill="pink", alpha=0.5) -
+      scale = "free_y") +
+  annotate("rect", xmin=2009, xmax=2016.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) +
+  annotate("rect", xmin=2017, xmax=2020.9, ymax=Inf, ymin=175000, fill="pink", alpha=0.5) +
   annotate("rect", xmin=2021, xmax=2024.9, ymax=Inf, ymin=175000, fill="lightblue", alpha=0.5) +
   annotate("text", x=2013, y=250000, label="Obama", hjust = 0.5, vjust=1, size = 2)+
   annotate("text", x=2019, y=250000, label="Trump I", hjust = 0.5, vjust=1, size = 2)+
@@ -628,12 +634,13 @@ g90100 <- gg1(c("US"), "adiincj992", percentile=c("p90p100")) +
     code = NULL)
 
 ggg <- g50 + g5090 + g90100 +
-  plot_annotation(caption="*Note* : Les échelles de revenus (axes des *y*) sont différentes pour chaque catégorie de revenu, les valeurs annuelles sont affichées en milieu d'année.   \n*Source* : World Inequality Database (WID), téléchargée le 10 mai 2025",
-                  theme = theme_ofce())
+  ofce_caption(
+    note="Les échelles de revenus (axes des *y*) sont différentes pour chaque catégorie de revenu, les valeurs annuelles sont affichées en milieu d'année.",
+    source="World Inequality Database (WID), {date_wid}")
 
 girafy(ggg)
 ```
 
 Ce phénomène est moins net pour les 40% suivants, mais depuis 2008, la croissance du revenu de la catégorie entre les 50% les moins riches aux 10% les plus riches a été plutôt faible comparée aux périodes précédentes. Le même ralentissement s'observe pour les 10% les plus riches, mais il est moins net, ce qui conduit à un accroissement des inégalités entre 2020 et 2023 (le ratio revenu moyen des 10% les plus riches au revenu moyen des 50% les moins riches passe de 8,49 à 9,05 aux Etats-Unis, contre 3,43 et 3,59 en France, @fig-evol) alors qu'il avait baissé de 2016 à 2020 (de 9,90 à 8,49). Depuis 2008, ce ratio est plus élevé et a augmenté aux Etats-Unis (8,91 en 2008), alors qu'il a diminué en Allemagne (de 5,21 à 4,97) ou en France (de 4,22 à 3,59). Du point de vue d'un Américain médian, la période récente n’est pas du tout favorable et la performance économique enviée de ce côté-ci de l'Atlantique n'est pas partagée le ling de la distribution des revenus.
 
-Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps [@godechot2012], la hausse des hautes rémunérations (en particulier dans la finance) et l'hypothèse assimilant productivité marginale et salaire individuel imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées {{< fa square >}}
+Notons également que ces évolutions peuvent polluer les analyses sectorielles. Comme l'ont montré certains auteurs il y a longtemps [@godechot2012], la hausse des hautes rémunérations (en particulier dans la finance) et l'hypothèse assimilant productivité marginale et salaire individuel imputent à tort les gains de productivité aux secteurs captant la rente alors que les gains peuvent provenir d'autres secteur (l'industrie, les services, la production intellectuelle). Les analyses sectorielles souffrent alors d'un biais qui peut promouvoir des recommandations erronées. {{< fa square >}}

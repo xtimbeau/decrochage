@@ -7,6 +7,7 @@ library(ggiraph)
 
 dir.create("/tmp/wid")
 
+# https://wid.world/bulk_download/wid_all_data.zip
 curl::curl_download("https://wid.world/bulk_download/wid_all_data.zip",
                     destfile = "/tmp/wid/wid.zip")
 unzip("/tmp/wid/wid.zip", exdir = "/tmp/wid")

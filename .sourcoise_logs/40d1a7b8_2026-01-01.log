@@ -1,0 +1,22 @@
+INFO [2026-01-01 15:36:56] Refreshing 2 source files
+INFO [2026-01-01 15:36:56] sourcoising /Users/xt/github/decrochage/oecd.r
+INFO [2026-01-01 15:36:56] Tracked files not found, check your paths.
+FATAL [2026-01-01 15:37:01] file fiches/data_pays/data_vars.R not found
+SUCCESS [2026-01-01 15:37:01] oecd.r cache valid (11.6K)
+ERROR [2026-01-01 15:37:01]   but oecd.r failed
+ERROR [2026-01-01 15:37:01] source file fiches/data_pays/data_vars.R not found
+INFO [2026-01-01 15:37:01] sourcoising /Users/xt/github/decrochage/wid.r
+INFO [2026-01-01 15:37:01] Tracked files not found, check your paths.
+SUCCESS [2026-01-01 15:38:26] wid.r (forced) in 84.11 sec. (4.09M)
+INFO [2026-01-01 15:39:25] Refreshing 2 source files
+FATAL [2026-01-01 15:39:26] file fiches/data_pays/data_vars.R not found
+INFO [2026-01-01 15:41:06] Refreshing 2 source files
+FATAL [2026-01-01 15:41:07] file fiches/data_pays/data_vars.R not found
+INFO [2026-01-01 15:41:45] Refreshing 2 source files
+INFO [2026-01-01 15:41:46] Initializing with init_fn()
+INFO [2026-01-01 15:41:46] sourcoising /Users/xt/github/decrochage/oecd.r
+INFO [2026-01-01 15:41:46] Tracked files not found, check your paths.
+SUCCESS [2026-01-01 15:41:48] oecd.r (forced) in 2.55 sec. (11.6K)
+INFO [2026-01-01 15:41:48] sourcoising /Users/xt/github/decrochage/wid.r
+INFO [2026-01-01 15:41:48] Tracked files not found, check your paths.
+SUCCESS [2026-01-01 15:43:08] wid.r (forced) in 78.98 sec. (4.09M)
