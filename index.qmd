@@ -128,7 +128,7 @@ tabsetize(plots, r=2)
 
 ```{r, results="asis"}
 
-download_margin(oecd |> select(year, country, variable, value))
+ofce::margin_download(oecd |> select(year, country, variable, value))
 
 ```
 
@@ -146,7 +146,7 @@ Depuis 2008, les Pays-Bas ont perdu 12 points de PIB par tête par rapport aux E
 
 De nombreuses explications ont été avancées pour expliquer le décrochage depuis 2008. On peut citer :
 
--   Une explication "keynésienne" selon laquelle les politiques macroéconomiques menées après la crise financière de 2008 et les conséquences de la crise des dettes souveraines en zone euro qui ont conduit à un sous-investissement privé et public et une sur-épargne du continent conduisant à un accroissement de la position nette extérieur et une réduction relative des dettes publiques plus importante en zone Euro qu'ailleurs [voir @iags2019; @dap2024; @blot2025]. La crise sanitaire de 2020 a pu avoir des conséquences différenciées accentuant des trajectoires divergentes depuis 2008.
+-   Une explication "keynésienne" selon laquelle les politiques macroéconomiques menées après la crise financière de 2008 et les conséquences de la crise des dettes souveraines en zone euro qui ont conduit à un sous-investissement privé et public et une sur-épargne du continent conduisant à un accroissement de la position nette extérieur et une réduction relative des dettes publiques plus importante en zone Euro qu'ailleurs [voir @iags2019; @blot2025]. La crise sanitaire de 2020 a pu avoir des conséquences différenciées accentuant des trajectoires divergentes depuis 2008.
 
 -   Une explication structurelle situant dans l'incomplétude de la zone euro, et en particulier la fragmentation financière, l'absence d'un marché de capitaux intégré, une trop grande importance du crédit bancaire dans le financement des entreprises, une concurrence insuffisante sur les marchés des biens et des services, un empilement normatif qui empêcheraient les entreprises européennes d'investir et d'innover et de prendre leur place dans la compétition technologique [voir @draghi2024].
 
@@ -273,13 +273,13 @@ plots <- list(
     "relatif aux USA" = gg1(c("US", "DE","FR","IT","ES","NL", "GB", "CHE"), "aptincj992", "us1"))
 )
 
-tabsetize2(plots, girafy=TRUE, r=1.5)
+ofce::tabsetize2(plots, girafy=TRUE, r=1.5)
 
 ```
 
 ```{r, results="asis"}
 
-download_margin(dina |> select(year, country, percentile,variable, type, revenu))
+margin_download(dina |> select(year, country, percentile,variable, type, revenu))
 
 ```
 
@@ -376,7 +376,7 @@ tabsetize2(eplots, girafy = TRUE, asp = 0.9)
 
 ```{r, results="asis"}
 
-download_margin(evol |> select(year, country, variable, s10s50))
+margin_download(evol |> select(year, country, variable, s10s50))
 
 ```
 
@@ -552,7 +552,7 @@ tabsetize(gg2)
 
 ```{r, results="asis"}
 
-download_margin(full_dec |> select(year, country3, decile, variable, popr, revenu, seuilm, seuilp, revenu_moy))
+margin_download(full_dec |> select(year, country3, decile, variable, popr, revenu, seuilm, seuilp, revenu_moy))
 
 ```
 

@@ -1,0 +1,12 @@
+INFO [2026-02-05 11:11:12] Refreshing 2 source files
+INFO [2026-02-05 11:11:12] sourcoising C:/Users/timbe/github/decrochage/oecd.r
+FATAL [2026-02-05 11:11:15] file fiches/data_pays/data_vars.R not found
+SUCCESS [2026-02-05 11:11:15] oecd.r cache valid (11.6K)
+INFO [2026-02-05 11:11:15] sourcoising C:/Users/timbe/github/decrochage/wid.r
+SUCCESS [2026-02-05 11:12:11] wid.r (forced) in 55.92 sec. (3.78M)
+INFO [2026-02-05 11:14:21] Refreshing 2 source files
+INFO [2026-02-05 11:14:23] Initializing with init_fn()
+INFO [2026-02-05 11:14:23] sourcoising C:/Users/timbe/github/decrochage/oecd.r
+SUCCESS [2026-02-05 11:14:26] oecd.r (forced) in 2.28 sec. (11.6K)
+INFO [2026-02-05 11:14:26] sourcoising C:/Users/timbe/github/decrochage/wid.r
+SUCCESS [2026-02-05 11:15:16] wid.r (forced) in 49.8 sec. (3.78M)
